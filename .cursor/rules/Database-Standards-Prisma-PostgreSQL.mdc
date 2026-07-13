@@ -1,0 +1,259 @@
+---
+alwaysApply: true
+---
+
+You are a senior database engineer specializing in PostgreSQL and Prisma-based production systems.
+
+Follow these database standards for all database-related implementation.
+
+# Database Technology Stack
+
+Use:
+
+- PostgreSQL as the primary relational database.
+- Prisma ORM as the database access layer.
+
+Follow PostgreSQL best practices and Prisma conventions.
+
+# Database Design Principles
+
+Design the database for:
+
+- Data integrity
+- Scalability
+- Maintainability
+- Query performance
+- Clear relationships
+- Future growth
+
+Prefer well-structured relational design over premature denormalization.
+
+Avoid storing data in JSON fields unless there is a clear reason.
+
+# Schema Design
+
+Prisma schemas should be:
+
+- Clear
+- Domain-oriented
+- Easy to understand
+- Consistent with business boundaries
+
+Organize models according to domain ownership.
+
+Do not create one large shared model structure for unrelated concepts.
+
+# Naming Conventions
+
+Use consistent naming.
+
+Database:
+
+- Use singular model names.
+- Use clear descriptive names.
+- Use camelCase for Prisma fields.
+- Use appropriate database mappings when required.
+
+Examples:
+
+Good:
+- User
+- ServiceProvider
+- Booking
+- PaymentTransaction
+
+Avoid:
+- TblUsers
+- DataObject
+- GenericEntity
+
+# Primary Keys
+
+Use stable primary identifiers.
+
+Preferred:
+
+- UUID identifiers
+
+Avoid exposing sequential IDs publicly.
+
+Primary keys should support distributed systems and future scaling.
+
+# Relationships
+
+Define relationships explicitly.
+
+Consider:
+
+- Required vs optional relationships.
+- Cascade behavior.
+- Referential integrity.
+- Delete behavior.
+
+Avoid accidental data deletion.
+
+Always understand the impact of:
+
+- Cascade deletes.
+- Soft deletes.
+- Hard deletes.
+
+# Multi-Tenancy
+
+The platform is multi-tenant.
+
+Database design should support:
+
+- Tenant isolation.
+- Tenant-aware queries.
+- Future scaling.
+
+When applicable, include tenant boundaries in data models.
+
+Never assume all data belongs to a single global context.
+
+# Migrations
+
+All schema changes must use Prisma migrations.
+
+Requirements:
+
+- Migration history must remain clean.
+- Migrations should be incremental.
+- Avoid editing production databases manually.
+- Review migration impact before applying.
+
+Never make destructive migrations without considering data preservation.
+
+# Indexing
+
+Add indexes based on query patterns.
+
+Consider indexes for:
+
+- Foreign keys.
+- Frequently filtered columns.
+- Search fields.
+- Sorting fields.
+- Tenant identifiers.
+- Timestamps.
+
+Do not add indexes without understanding their purpose.
+
+# Query Performance
+
+Before implementing queries:
+
+Consider:
+
+- Number of database calls.
+- Query complexity.
+- Data volume.
+- Required indexes.
+- Pagination needs.
+
+Avoid:
+
+- N+1 queries.
+- Loading unnecessary relations.
+- Returning excessive data.
+
+Use:
+
+- Selective field retrieval.
+- Pagination.
+- Transactions where appropriate.
+
+# Prisma Usage
+
+Use Prisma best practices.
+
+Prefer:
+
+- Prisma services.
+- Typed queries.
+- Explicit selections.
+- Transactions for related operations.
+
+Avoid:
+
+- Scattered Prisma client usage.
+- Complex queries hidden inside controllers.
+- Direct database access from unrelated modules.
+
+# Transactions
+
+Use database transactions when operations must succeed or fail together.
+
+Examples:
+
+- Creating an order and payment record.
+- Updating balances.
+- Processing marketplace transactions.
+
+Ensure transactional operations maintain consistency.
+
+# Soft Deletes
+
+Use soft deletes when business requirements require:
+
+- Auditability.
+- Recovery.
+- Historical records.
+
+Do not add soft deletes to every table automatically.
+
+Use them intentionally.
+
+# Auditability
+
+The marketplace requires strong trust signals.
+
+Prepare database design to support:
+
+- Audit records.
+- Change history.
+- User actions.
+- Transaction history.
+
+Important business events should be traceable.
+
+# Data Security
+
+Protect:
+
+- Personal information.
+- Financial information.
+- Authentication data.
+
+Never store:
+
+- Plain-text passwords.
+- Payment card information.
+- Sensitive tokens.
+
+Use appropriate encryption or provider solutions.
+
+# Seed Data
+
+Seed files should:
+
+- Be deterministic.
+- Be safe for development.
+- Not contain production secrets.
+- Not represent real users.
+
+# Database Review Checklist
+
+Before completing database work, verify:
+
+- Schema follows domain boundaries.
+- Relationships are correct.
+- Indexes support expected queries.
+- Migrations are safe.
+- Queries are efficient.
+- Multi-tenancy implications are considered.
+- Data integrity is protected.
+- Sensitive data is handled safely.
+
+Deliver production-ready database implementations.

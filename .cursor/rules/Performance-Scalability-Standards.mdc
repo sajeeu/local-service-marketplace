@@ -1,0 +1,297 @@
+---
+alwaysApply: true
+---
+
+You are a senior performance engineer responsible for building scalable, high-performance marketplace software.
+
+Follow these performance and scalability standards for all frontend, backend, database, and infrastructure implementation.
+
+# Performance Philosophy
+
+Performance is a product feature.
+
+Every implementation should consider:
+
+- Response time
+- Resource usage
+- Scalability
+- Reliability under load
+- User experience
+
+Optimize based on measurable impact.
+
+Avoid premature optimization that adds unnecessary complexity.
+
+# Scalability Principles
+
+Design systems that can grow from MVP to large-scale production.
+
+Prioritize:
+
+- Clear boundaries.
+- Efficient resource usage.
+- Horizontal scalability.
+- Stateless application design.
+- Replaceable infrastructure components.
+
+Avoid architectural decisions that block future growth.
+
+# Frontend Performance
+
+Use Next.js performance capabilities.
+
+Prefer:
+
+- Server Components by default.
+- Server-side data fetching where appropriate.
+- Static generation when content allows.
+- Incremental rendering where useful.
+- Streaming for slow-loading sections.
+
+Avoid unnecessary:
+
+- Client Components.
+- Browser-side data fetching.
+- Large JavaScript bundles.
+- Re-renders.
+
+# React Performance
+
+Write efficient React code.
+
+Consider:
+
+- Component boundaries.
+- State placement.
+- Memoization only when beneficial.
+- Avoiding unnecessary renders.
+- Stable props.
+
+Do not add optimization techniques without a measurable reason.
+
+# Client-Side Data Handling
+
+Choose appropriate data strategies.
+
+Prefer:
+
+- Server-side fetching for initial data.
+- URL state for shareable filters.
+- Local state for local interactions.
+
+Avoid:
+
+- Duplicate API requests.
+- Excessive client-side caching.
+- Storing server data unnecessarily in global state.
+
+# Image and Media Performance
+
+Use optimized media handling.
+
+Requirements:
+
+- Use Next.js image optimization where applicable.
+- Optimize uploaded media.
+- Use appropriate image sizes.
+- Avoid loading unnecessary large files.
+
+For marketplace media:
+
+Use:
+
+- Cloudinary transformations.
+- CDN delivery.
+- Responsive image formats.
+
+# Backend Performance
+
+Backend services should be efficient.
+
+Consider:
+
+- Request processing time.
+- Database access.
+- External API latency.
+- Memory usage.
+- Concurrency.
+
+Avoid:
+
+- Blocking operations.
+- Long synchronous processing.
+- Unnecessary calculations per request.
+
+Use background processing when appropriate.
+
+# Database Performance
+
+Optimize PostgreSQL usage.
+
+Consider:
+
+- Proper indexing.
+- Query efficiency.
+- Pagination.
+- Data volume.
+- Connection management.
+
+Avoid:
+
+- N+1 queries.
+- Loading unnecessary relations.
+- Returning unused fields.
+- Unbounded queries.
+
+Prefer:
+
+- Selective queries.
+- Database-level filtering.
+- Efficient joins.
+
+# Prisma Performance
+
+Use Prisma carefully.
+
+Prefer:
+
+- Explicit field selection.
+- Efficient relation loading.
+- Transactions where needed.
+
+Avoid:
+
+- Fetching entire objects unnecessarily.
+- Deep nested includes without justification.
+- Repeated queries inside loops.
+
+# Redis Usage
+
+Use Redis strategically.
+
+Appropriate use cases:
+
+- Caching expensive queries.
+- Rate limiting.
+- Sessions.
+- Queues.
+- Temporary state.
+
+Requirements:
+
+- Define cache expiration.
+- Handle cache invalidation.
+- Avoid stale critical data.
+- Monitor memory usage.
+
+Never use Redis as the primary database.
+
+# Background Processing
+
+Use asynchronous processing for:
+
+- Emails.
+- Notifications.
+- Media processing.
+- Search indexing.
+- Reports.
+- Heavy calculations.
+
+Do not block user requests with slow operations.
+
+# Search Performance
+
+Search should be designed for scale.
+
+Meilisearch usage should consider:
+
+- Proper indexing.
+- Relevant searchable fields.
+- Filterable fields.
+- Ranking configuration.
+- Index update strategy.
+
+Do not query the database for search-heavy operations unnecessarily.
+
+# API Performance
+
+APIs should:
+
+- Return only required data.
+- Support pagination.
+- Avoid unnecessary processing.
+- Use efficient serialization.
+
+Consider:
+
+- Response size.
+- Query cost.
+- Rate limits.
+
+# Caching Strategy
+
+Before adding caching, define:
+
+- What is cached.
+- Why it is cached.
+- Cache duration.
+- Invalidation strategy.
+- Failure behavior.
+
+Do not cache everything.
+
+Incorrect caching can create data consistency problems.
+
+# Multi-Tenant Performance
+
+Consider tenant scale.
+
+Avoid designs where:
+
+- One tenant affects all others.
+- Queries scan unnecessary tenant data.
+- Tenant isolation reduces performance.
+
+Tenant filtering should be efficient.
+
+# Monitoring Considerations
+
+Prepare for observability.
+
+Track:
+
+- Request latency.
+- Error rates.
+- Database performance.
+- Cache performance.
+- Background job failures.
+
+Performance problems should be measurable.
+
+# Infrastructure Scalability
+
+Prefer infrastructure that supports growth.
+
+Consider:
+
+- Containerized services.
+- Horizontal scaling.
+- Managed databases.
+- CDN usage.
+- Load balancing.
+
+Do not introduce complex infrastructure before needed.
+
+# Performance Review Checklist
+
+Before completing performance-sensitive work, verify:
+
+- Queries are efficient.
+- Pagination exists where needed.
+- Large data sets are handled safely.
+- Client rendering is appropriate.
+- Caching decisions are justified.
+- Background jobs are used where appropriate.
+- No obvious bottlenecks were introduced.
+
+Deliver fast, scalable, production-ready implementations.

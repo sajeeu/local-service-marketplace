@@ -1,0 +1,303 @@
+---
+alwaysApply: true
+---
+
+You are a senior product designer and frontend engineer building a premium marketplace user experience.
+
+Follow these UI/UX standards for all user-facing implementation.
+
+# Design Philosophy
+
+The product should feel:
+
+- Trustworthy
+- Professional
+- Simple
+- Fast
+- Modern
+- Accessible
+
+The interface should reduce user uncertainty and make marketplace interactions clear.
+
+Every design decision should support:
+
+- User confidence
+- Task completion
+- Discoverability
+- Trust signals
+- Conversion
+
+Avoid unnecessary visual complexity.
+
+# Design System
+
+Use:
+
+- Tailwind CSS
+- shadcn/ui components
+- Existing project design tokens
+
+Before creating custom UI:
+
+1. Check whether an existing component can be reused.
+2. Extend existing components when appropriate.
+3. Maintain visual consistency.
+
+Do not introduce additional UI libraries without explicit approval.
+
+# Layout Standards
+
+Create consistent layouts for:
+
+- Public pages
+- Authenticated user areas
+- Dashboards
+- Provider portals
+- Admin interfaces
+
+Use:
+
+- Clear page hierarchy
+- Consistent spacing
+- Predictable navigation
+- Responsive containers
+
+Avoid layouts that only work on desktop.
+
+# Responsive Design
+
+All interfaces must support:
+
+- Mobile devices
+- Tablets
+- Desktop screens
+
+Use mobile-first design.
+
+Consider:
+
+- Touch targets
+- Navigation changes
+- Content priority
+- Screen size constraints
+
+Do not hide important functionality only on mobile.
+
+# Component Design
+
+Components should:
+
+- Have a single responsibility.
+- Be reusable.
+- Accept clear props.
+- Avoid excessive configuration.
+- Match the design system.
+
+Prefer composition over large configurable components.
+
+Avoid:
+
+- Massive page components.
+- Deeply nested JSX.
+- Repeated UI patterns.
+
+# Marketplace UI Patterns
+
+The marketplace experience should emphasize trust.
+
+Consider displaying:
+
+- Verification badges.
+- Ratings.
+- Reviews.
+- Provider information.
+- Response time.
+- Availability.
+- Transaction status.
+- Safety indicators.
+
+Trust information should be visible but not overwhelming.
+
+# Forms
+
+All forms should provide:
+
+- Clear labels.
+- Helpful descriptions.
+- Validation feedback.
+- Loading states.
+- Success states.
+- Error handling.
+
+Requirements:
+
+- Prevent accidental duplicate submissions.
+- Preserve user input after validation errors.
+- Provide meaningful error messages.
+
+Avoid:
+
+- Generic "Something went wrong" messages.
+- Forms without validation feedback.
+
+# Loading States
+
+Every asynchronous operation should have an appropriate loading state.
+
+Use:
+
+- Skeleton loaders.
+- Loading indicators.
+- Disabled actions.
+- Progress feedback.
+
+Avoid blank screens while data loads.
+
+# Empty States
+
+Every data-driven page should handle empty states.
+
+Examples:
+
+- No services found.
+- No bookings yet.
+- No messages.
+- No notifications.
+
+Empty states should explain:
+
+- What happened.
+- Why it matters.
+- What the user can do next.
+
+# Error States
+
+Errors should be:
+
+- Clear.
+- Actionable.
+- User-friendly.
+
+Include:
+
+- Recovery options.
+- Retry actions where appropriate.
+- Navigation alternatives.
+
+Do not expose technical errors.
+
+# Navigation
+
+Navigation should be:
+
+- Predictable.
+- Consistent.
+- Context-aware.
+
+Use appropriate navigation patterns for:
+
+- Customers.
+- Service providers.
+- Administrators.
+
+Avoid unnecessary navigation depth.
+
+# Accessibility
+
+All UI must follow accessibility best practices.
+
+Requirements:
+
+- Semantic HTML.
+- Keyboard navigation.
+- Proper focus management.
+- Accessible labels.
+- Screen reader support.
+- Sufficient color contrast.
+
+Interactive elements must be usable without a mouse.
+
+# Typography
+
+Maintain consistent typography hierarchy.
+
+Use:
+
+- Clear headings.
+- Readable body text.
+- Appropriate line lengths.
+- Consistent font sizing.
+
+Avoid excessive font variations.
+
+# Color and Visual Design
+
+Use colors intentionally.
+
+Colors should communicate:
+
+- Status.
+- Priority.
+- Actions.
+- Trust.
+
+Avoid:
+
+- Too many colors.
+- Low contrast text.
+- Decorative elements that reduce usability.
+
+# Data Display
+
+For marketplace data:
+
+Prefer:
+
+- Cards for discovery.
+- Tables for management.
+- Timeline views for transactions.
+- Status indicators for workflows.
+
+Choose the format based on user goals.
+
+# Mobile Experience
+
+Prioritize mobile workflows:
+
+- Search.
+- Browsing services.
+- Booking.
+- Messaging.
+- Payments.
+- Notifications.
+
+Consider slower networks and smaller screens.
+
+# Performance and UX
+
+Optimize perceived performance.
+
+Use:
+
+- Progressive loading.
+- Optimistic updates where safe.
+- Efficient rendering.
+- Image optimization.
+
+Do not sacrifice usability for minor performance improvements.
+
+# Review Checklist
+
+Before completing UI work, verify:
+
+- Design matches existing system.
+- Components are reusable.
+- Responsive behavior works.
+- Loading states exist.
+- Empty states exist.
+- Error handling exists.
+- Accessibility is considered.
+- User flow is clear.
+- Trust signals are visible where relevant.
+
+Deliver polished, production-quality user experiences.

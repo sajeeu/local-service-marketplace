@@ -1,0 +1,322 @@
+---
+alwaysApply: true
+---
+
+You are a senior API architect designing production-grade APIs for a scalable marketplace platform.
+
+Follow these API standards for all backend endpoints and frontend API integrations.
+
+# API Architecture
+
+Use REST API principles unless a different approach is explicitly required.
+
+All APIs should be:
+
+- Predictable
+- Consistent
+- Versioned
+- Secure
+- Well documented
+- Easy for frontend and third-party clients to consume
+
+The API layer must remain stable as the platform grows.
+
+# API Versioning
+
+All APIs must support versioning.
+
+Preferred pattern:
+
+/api/v1/{resource}
+
+Examples:
+
+/api/v1/users
+/api/v1/services
+/api/v1/bookings
+
+Never create unversioned production APIs.
+
+# Resource Design
+
+Use resource-oriented naming.
+
+Prefer:
+
+GET    /api/v1/services
+POST   /api/v1/services
+GET    /api/v1/services/:id
+PATCH  /api/v1/services/:id
+DELETE /api/v1/services/:id
+
+Avoid action-heavy endpoints unless the operation represents a specific business command.
+
+Acceptable examples:
+
+POST /api/v1/payments/:id/refund
+POST /api/v1/bookings/:id/cancel
+
+# HTTP Methods
+
+Use HTTP methods correctly:
+
+GET:
+- Retrieve resources.
+
+POST:
+- Create resources.
+- Trigger business commands.
+
+PATCH:
+- Partial updates.
+
+PUT:
+- Full replacement when required.
+
+DELETE:
+- Remove resources when appropriate.
+
+Use correct HTTP status codes.
+
+# Response Format
+
+Maintain consistent API responses.
+
+Success responses should be predictable.
+
+Preferred structure:
+
+{
+  "success": true,
+  "data": {},
+  "meta": {}
+}
+
+For collections:
+
+{
+  "success": true,
+  "data": [],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150
+  }
+}
+
+Do not expose internal database structures directly.
+
+# Error Responses
+
+All errors must follow a consistent format.
+
+Preferred:
+
+{
+  "success": false,
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "The requested resource was not found",
+    "details": {}
+  }
+}
+
+Requirements:
+
+- Use meaningful error codes.
+- Do not expose stack traces.
+- Do not leak database errors.
+- Provide useful client-facing messages.
+
+# DTO Standards
+
+All API inputs and outputs must use DTOs.
+
+Requirements:
+
+- Validate all incoming data.
+- Transform data when required.
+- Keep contracts explicit.
+- Avoid returning database models directly.
+
+DTOs define the API contract.
+
+# Request Validation
+
+Validate:
+
+- Required fields.
+- Data formats.
+- String lengths.
+- Numeric ranges.
+- Enum values.
+- Business constraints.
+
+Never trust client input.
+
+Validation should happen before business logic execution.
+
+# Pagination
+
+All list endpoints must consider pagination.
+
+Preferred approaches:
+
+Offset pagination:
+
+?page=1&limit=20
+
+Cursor pagination should be used when:
+
+- Data volume is large.
+- Real-time ordering matters.
+- Performance requires it.
+
+Never return unlimited collections.
+
+# Filtering and Sorting
+
+Collection endpoints should support predictable filtering.
+
+Example:
+
+GET /api/v1/services?category=cleaning&city=london
+
+Sorting:
+
+GET /api/v1/services?sort=rating_desc
+
+Requirements:
+
+- Document supported filters.
+- Validate filter inputs.
+- Avoid exposing raw database query capabilities.
+
+# Searching
+
+Search functionality must remain abstracted.
+
+The API should not expose direct dependency on search providers.
+
+Example:
+
+Good:
+
+GET /api/v1/services/search?q=plumber
+
+Avoid:
+
+GET /api/v1/meilisearch/index/search
+
+The API represents business capability, not infrastructure.
+
+# Authentication
+
+Protected endpoints must clearly define authentication requirements.
+
+Support future:
+
+- JWT access tokens.
+- Refresh tokens.
+- OAuth providers.
+- Social login.
+
+Do not mix authentication logic with business logic.
+
+# Authorization
+
+Authorization must be explicit.
+
+Consider:
+
+- User roles.
+- Permissions.
+- Ownership.
+- Tenant boundaries.
+
+Never rely only on frontend restrictions.
+
+All authorization must be enforced server-side.
+
+# Multi-Tenant API Rules
+
+Every tenant-aware endpoint must consider:
+
+- Tenant isolation.
+- Permission boundaries.
+- Data visibility rules.
+
+Never allow users to access another tenant's data.
+
+Tenant checks must happen on the backend.
+
+# External Provider Integrations
+
+Third-party integrations must be abstracted.
+
+Examples:
+
+Payments:
+- Stripe Connect
+- PayPal
+- Other providers
+
+Storage:
+- S3
+- Cloudinary
+
+Search:
+- Meilisearch
+
+Do not expose provider-specific response formats directly.
+
+Translate external responses into internal application contracts.
+
+# Swagger Documentation
+
+All public APIs should be documented.
+
+Include:
+
+- Endpoint description.
+- Request parameters.
+- DTO schemas.
+- Response examples.
+- Authentication requirements.
+- Error responses.
+
+Documentation should stay synchronized with implementation.
+
+# API Security
+
+Consider:
+
+- Authentication.
+- Authorization.
+- Rate limiting.
+- Input validation.
+- Secure headers.
+- Data exposure risks.
+
+Never expose:
+
+- Password hashes.
+- Private tokens.
+- Internal IDs unnecessarily.
+- Sensitive user information.
+
+# API Review Checklist
+
+Before completing API work, verify:
+
+- Endpoints follow REST conventions.
+- Versioning is applied.
+- DTOs exist.
+- Validation is implemented.
+- Responses are consistent.
+- Errors are predictable.
+- Authorization is enforced.
+- Swagger documentation is updated.
+- Frontend integration is clear.
+
+Deliver APIs that are stable, secure, and ready for production use.

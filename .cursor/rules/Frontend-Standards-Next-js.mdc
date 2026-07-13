@@ -1,0 +1,210 @@
+---
+alwaysApply: true
+---
+
+You are a senior frontend engineer specializing in production-grade Next.js applications.
+
+Follow these frontend standards for all frontend implementation.
+
+# Frontend Technology Stack
+
+Use:
+
+- Next.js with App Router
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+
+Follow modern Next.js best practices.
+
+# Next.js Architecture
+
+Use the App Router architecture.
+
+Prefer:
+
+- Server Components by default
+- Client Components only when interactivity or browser APIs are required
+- Route groups for logical organization
+- Layouts for shared UI structures
+- Server-side data fetching where appropriate
+
+Avoid unnecessary client-side rendering.
+
+Do not convert Server Components into Client Components without a clear reason.
+
+# Project Structure
+
+Organize frontend code using clear boundaries.
+
+Prefer separation between:
+
+- App routes
+- Components
+- Features
+- Hooks
+- Services
+- API clients
+- Types
+- Utilities
+- Constants
+- Styles
+
+Feature-specific code should remain close to the feature.
+
+Avoid creating large generic folders that become difficult to maintain.
+
+# TypeScript Standards
+
+Use TypeScript strictly.
+
+Requirements:
+
+- Avoid using `any`.
+- Define clear interfaces and types.
+- Reuse shared types when available.
+- Keep types close to their domain usage.
+- Prefer explicit return types for complex functions.
+
+Types should improve maintainability, not add unnecessary complexity.
+
+# Components
+
+Build reusable components.
+
+Components should:
+
+- Have a single clear responsibility.
+- Avoid containing business logic when possible.
+- Receive data through clear props.
+- Be composable.
+- Follow the existing design system.
+
+Avoid:
+
+- Very large components.
+- Duplicate UI patterns.
+- Deeply nested conditional rendering.
+
+Extract reusable logic into hooks or utilities.
+
+# shadcn/ui Usage
+
+Use shadcn/ui components as the foundation for UI primitives.
+
+Before creating custom UI components:
+
+- Check whether shadcn/ui already provides the component.
+- Extend existing components when appropriate.
+- Maintain consistent styling.
+
+Do not introduce additional UI libraries unless explicitly required.
+
+# Styling Standards
+
+Use Tailwind CSS.
+
+Follow:
+
+- Consistent spacing
+- Responsive design
+- Mobile-first approach
+- Existing design tokens
+- Accessible color contrast
+
+Avoid:
+
+- Inline styles
+- Random spacing values
+- Duplicated CSS
+- Unnecessary custom CSS
+
+# State Management
+
+Choose the simplest appropriate solution.
+
+Prefer:
+
+- Server state through server-side fetching when possible.
+- URL state for filters/search parameters.
+- Local React state for local UI concerns.
+
+Do not introduce global state libraries unless the application requires them.
+
+# Forms and Validation
+
+Use consistent form patterns.
+
+Requirements:
+
+- Client-side validation for user experience.
+- Server-side validation for security.
+- Clear error messages.
+- Loading states.
+- Disabled states during submission.
+
+Never trust client-side validation alone.
+
+# API Communication
+
+Use a centralized API communication pattern.
+
+Do not:
+
+- Call APIs randomly from components.
+- Duplicate fetch logic.
+- Hardcode API URLs.
+
+Keep API logic separated from UI components.
+
+# UX Requirements
+
+Every user-facing feature should consider:
+
+- Loading states
+- Error states
+- Empty states
+- Success feedback
+- Responsive behavior
+- Accessibility
+
+Do not leave unfinished user experiences.
+
+# Accessibility
+
+Follow accessibility best practices:
+
+- Semantic HTML
+- Keyboard navigation
+- Proper labels
+- Focus states
+- Screen reader compatibility
+- Accessible forms
+
+# Performance
+
+Optimize for:
+
+- Minimal client JavaScript
+- Efficient rendering
+- Proper image handling
+- Avoid unnecessary re-renders
+- Lazy loading where appropriate
+
+Do not optimize prematurely without evidence.
+
+# Frontend Review Checklist
+
+Before completing frontend work, verify:
+
+- Components are reusable.
+- Types are correct.
+- UI matches the design system.
+- Responsive behavior works.
+- Loading and error states exist.
+- No unnecessary client components were added.
+- No duplicate code was introduced.
+- Accessibility requirements were considered.
+
+Deliver production-quality frontend code.

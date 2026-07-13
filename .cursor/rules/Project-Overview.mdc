@@ -1,0 +1,310 @@
+---
+alwaysApply: true
+---
+
+---
+description: Project overview, architecture, technology stack, and guiding principles for the Local Service Marketplace.
+alwaysApply: true
+---
+
+# Project Overview
+
+This repository contains a production-grade, multi-tenant Local Service Marketplace.
+
+The objective is to build a scalable platform that connects customers and service providers while emphasizing trust, reliability, security, and maintainability.
+
+The architecture should support rapid MVP development while remaining capable of growing into a high-scale marketplace without major rewrites.
+
+---
+
+# Core Business Domains
+
+The platform is organized around three primary domains.
+
+## 1. Identity & Trust
+
+Responsible for:
+
+- User accounts
+- Authentication
+- Authorization
+- Email verification
+- Phone verification
+- Business verification
+- Identity verification
+- Reviews
+- Ratings
+- Moderation
+- Disputes
+- Audit history
+
+Trust is a core feature of the platform.
+
+Every architectural decision should preserve traceability and accountability.
+
+---
+
+## 2. Search & Discovery
+
+Responsible for:
+
+- Service listings
+- Categories
+- Location awareness
+- Geo search
+- Filters
+- Ranking
+- Recommendations
+- Availability
+- Future AI-assisted discovery
+
+Search infrastructure should remain replaceable without affecting business logic.
+
+---
+
+## 3. Transaction Orchestration
+
+Responsible for:
+
+- Booking
+- Orders
+- Payments
+- Escrow-like flows
+- Refunds
+- Provider payouts
+- Transaction history
+- Financial reporting
+
+Payment providers must remain abstracted behind provider interfaces.
+
+---
+
+# Architecture
+
+The application follows a **Modular Monolith** architecture.
+
+Requirements:
+
+- Strong module boundaries.
+- Low coupling.
+- High cohesion.
+- Independent domain modules.
+- Shared infrastructure only where appropriate.
+- No circular dependencies.
+
+Design modules so they can later become independent services if required.
+
+Do **not** introduce microservices unless explicitly requested.
+
+---
+
+# Engineering Principles
+
+Always prioritize:
+
+- Simplicity
+- Readability
+- Maintainability
+- Scalability
+- Security
+- Testability
+- Production readiness
+
+Avoid unnecessary abstraction.
+
+Avoid over-engineering.
+
+Prefer explicit code over clever code.
+
+---
+
+# Technology Stack
+
+## Frontend
+
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+
+Use current Next.js best practices.
+
+Prefer Server Components unless client-side interactivity is required.
+
+---
+
+## Backend
+
+- NestJS
+- TypeScript
+- Prisma ORM
+
+Use NestJS modules to represent business domains.
+
+Business logic belongs in services.
+
+Controllers should remain thin.
+
+---
+
+## Database
+
+Primary database:
+
+- PostgreSQL
+
+ORM:
+
+- Prisma
+
+Future migrations must be incremental and reversible.
+
+Avoid raw SQL unless there is a measurable performance benefit.
+
+---
+
+## Cache
+
+Redis is the primary solution for:
+
+- Caching
+- Sessions
+- Rate limiting
+- Queues
+- Temporary data
+
+Do not store permanent business data in Redis.
+
+---
+
+## Search
+
+Meilisearch is the primary search engine.
+
+Application logic should never depend directly on Meilisearch-specific behavior.
+
+Search must remain replaceable.
+
+---
+
+## Storage
+
+Object storage:
+
+- AWS S3
+
+Media optimization:
+
+- Cloudinary
+
+Application code should use storage abstractions instead of provider-specific logic.
+
+---
+
+## Payments
+
+Primary marketplace provider:
+
+- Stripe Connect
+
+Future providers may include:
+
+- PayPal
+- Razorpay
+- Flutterwave
+- Paystack
+- Bank Transfer
+- Wallet
+- Cash on Service
+
+Never couple business logic directly to Stripe APIs.
+
+Use provider abstractions.
+
+---
+
+## Infrastructure
+
+Development:
+
+- Docker
+- Docker Compose
+
+CI/CD:
+
+- GitHub Actions
+
+Deployment:
+
+- AWS
+
+Frontend may optionally be deployed on Vercel.
+
+---
+
+# Code Philosophy
+
+Every implementation should satisfy the following goals:
+
+- Easy to understand.
+- Easy to modify.
+- Easy to test.
+- Easy to extend.
+- Consistent throughout the repository.
+
+Code should feel as though it was written by one experienced engineering team.
+
+---
+
+# Production Standards
+
+All code generated should be production-ready.
+
+Avoid:
+
+- Placeholder implementations
+- Fake business logic
+- Mock production code
+- Temporary workarounds
+- Incomplete implementations
+- Duplicate functionality
+
+Only generate placeholders when explicitly requested.
+
+---
+
+# Future Growth
+
+Architectural decisions should anticipate future support for:
+
+- Multi-tenancy
+- Horizontal scaling
+- Background jobs
+- Event-driven workflows
+- Real-time notifications
+- AI-assisted search
+- Analytics
+- Mobile applications
+- Public APIs
+- Third-party integrations
+
+Do not implement these features now.
+
+Only ensure today's architecture will support them.
+
+---
+
+# Decision Rule
+
+When multiple valid implementations exist:
+
+Choose the solution that best balances:
+
+1. Maintainability
+2. Scalability
+3. Security
+4. Performance
+5. Developer experience
+
+Avoid unnecessary complexity unless there is a clear long-term benefit.

@@ -1,0 +1,387 @@
+---
+alwaysApply: true
+---
+
+You are a senior software architect designing a scalable multi-tenant marketplace platform.
+
+Follow these domain architecture standards for all marketplace-related implementation.
+
+# Marketplace Architecture Philosophy
+
+The platform is a multi-tenant local service marketplace connecting:
+
+- Customers seeking services.
+- Service providers offering services.
+- Businesses managing service operations.
+- Platform administrators managing trust, safety, and transactions.
+
+The architecture must support growth from MVP to a large-scale marketplace.
+
+Prioritize:
+
+- Trust.
+- Safety.
+- Clear ownership.
+- Transaction reliability.
+- Domain separation.
+- Future scalability.
+
+# Domain-Driven Structure
+
+Organize the application around business domains.
+
+Core domains:
+
+1. Identity & Trust
+2. Provider Management
+3. Service Catalog
+4. Search & Discovery
+5. Booking & Scheduling
+6. Transaction Orchestration
+7. Communication
+8. Reviews & Reputation
+9. Disputes & Support
+10. Administration
+
+Each domain should have clear responsibilities.
+
+Avoid creating generic modules that contain unrelated business logic.
+
+# Modular Monolith Rules
+
+The application should start as a modular monolith.
+
+Requirements:
+
+- Strong module boundaries.
+- Clear ownership of data.
+- Limited cross-module dependencies.
+- Domain-focused services.
+
+Each module should be capable of becoming an independent service later.
+
+Do not introduce microservices prematurely.
+
+# Multi-Tenancy
+
+The platform must support multiple tenants.
+
+Tenant examples:
+
+- Individual service providers.
+- Small businesses.
+- Larger service organizations.
+
+Every tenant-aware feature must consider:
+
+- Tenant ownership.
+- Data isolation.
+- Permissions.
+- Visibility rules.
+
+Never allow data leakage between tenants.
+
+# Identity & Trust Domain
+
+Responsible for:
+
+- User accounts.
+- Authentication.
+- Roles.
+- Permissions.
+- Verification.
+- Identity checks.
+- Business validation.
+- Trust signals.
+
+Separate:
+
+- Authentication identity.
+- Marketplace profile.
+- Business/provider information.
+
+Do not create one oversized user model containing all marketplace concepts.
+
+# User Types
+
+The platform should support different actors:
+
+Customer:
+
+- Searches services.
+- Books providers.
+- Makes payments.
+- Leaves reviews.
+
+Provider:
+
+- Creates services.
+- Manages availability.
+- Receives bookings.
+- Receives payouts.
+
+Business:
+
+- Manages multiple providers.
+- Controls organization-level operations.
+
+Admin:
+
+- Moderates.
+- Reviews disputes.
+- Manages platform operations.
+
+Design permissions accordingly.
+
+# Provider Domain
+
+Provider functionality includes:
+
+- Provider profile.
+- Skills.
+- Qualifications.
+- Verification status.
+- Availability.
+- Service ownership.
+- Performance metrics.
+
+Provider data should support trust and discovery.
+
+# Service Catalog Domain
+
+Services represent marketplace offerings.
+
+Consider:
+
+- Categories.
+- Descriptions.
+- Pricing.
+- Locations.
+- Availability.
+- Media.
+- Requirements.
+- Provider ownership.
+
+Avoid mixing service definitions with bookings.
+
+A service describes an offering.
+
+A booking represents a transaction.
+
+# Search & Discovery Domain
+
+Search should be treated as a separate capability.
+
+Responsibilities:
+
+- Indexing.
+- Searching.
+- Filtering.
+- Ranking.
+- Location discovery.
+
+Search infrastructure:
+
+- Meilisearch.
+
+The application should own business data.
+
+Search indexes should be derived representations.
+
+Never make search the source of truth.
+
+# Booking Domain
+
+Bookings represent customer-provider commitments.
+
+Consider:
+
+- Requested service.
+- Customer.
+- Provider.
+- Schedule.
+- Status.
+- Cancellation.
+- Completion.
+
+Define clear booking lifecycle states.
+
+Avoid changing booking states without validation.
+
+# Transaction Domain
+
+Payments are business-critical.
+
+Responsibilities:
+
+- Payment intent.
+- Authorization.
+- Capture.
+- Refunds.
+- Provider payouts.
+- Transaction history.
+
+Use Stripe Connect as the initial payment provider.
+
+Payment logic must be abstracted behind interfaces.
+
+Never tightly couple the platform to one payment provider.
+
+# Payment Lifecycle
+
+Support future flows:
+
+- Customer payment.
+- Platform fee.
+- Provider payout.
+- Refund.
+- Dispute handling.
+
+Financial records must be auditable.
+
+Never rely only on external provider records.
+
+# Reviews & Reputation
+
+Reviews should support trust.
+
+Consider:
+
+- Verified transactions.
+- Ratings.
+- Review moderation.
+- Provider reputation.
+- Customer reputation.
+
+Prevent abuse.
+
+Do not allow fake review creation.
+
+# Communication Domain
+
+Communication may include:
+
+- Messaging.
+- Notifications.
+- Email.
+- SMS.
+- Push notifications.
+
+Keep communication providers abstract.
+
+Examples:
+
+- Email providers.
+- SMS providers.
+- Notification services.
+
+# Disputes & Support
+
+Dispute handling requires:
+
+- Case tracking.
+- Evidence.
+- Decisions.
+- Audit history.
+
+Important marketplace actions should be traceable.
+
+# Auditability
+
+The platform requires strong audit capability.
+
+Track important events:
+
+- Authentication changes.
+- Permission changes.
+- Verification decisions.
+- Payment events.
+- Booking changes.
+- Administrative actions.
+
+Audit records should be append-only where appropriate.
+
+# External Service Boundaries
+
+Third-party systems must be isolated.
+
+Examples:
+
+Payments:
+
+- Stripe Connect.
+
+Search:
+
+- Meilisearch.
+
+Storage:
+
+- AWS S3.
+- Cloudinary.
+
+Notifications:
+
+- Email/SMS providers.
+
+Do not spread provider-specific code throughout the application.
+
+# Domain Events
+
+Consider domain events for important actions.
+
+Examples:
+
+- UserVerified.
+- ServiceCreated.
+- BookingConfirmed.
+- PaymentCompleted.
+- ProviderPaid.
+
+Use events where they improve decoupling.
+
+Do not introduce event systems for simple operations unnecessarily.
+
+# Data Ownership Rules
+
+Each domain owns its business logic.
+
+Avoid:
+
+- One module directly modifying another module's data.
+- Shared database access patterns without ownership.
+- Cross-domain business rules hidden in utilities.
+
+Prefer:
+
+- Clear interfaces.
+- Service contracts.
+- Domain events.
+
+# Future Scaling Considerations
+
+Architecture should allow future extraction of:
+
+- Search service.
+- Payment service.
+- Notification service.
+- Identity service.
+- Analytics service.
+
+Do not build these as separate services now.
+
+Prepare boundaries first.
+
+# Marketplace Review Checklist
+
+Before implementing marketplace features, verify:
+
+- Domain ownership is clear.
+- Tenant isolation is maintained.
+- Trust systems are considered.
+- Payment flows are auditable.
+- Search is decoupled.
+- External providers are abstracted.
+- Future scaling paths remain possible.
+
+Build marketplace functionality using clean, scalable domain boundaries.

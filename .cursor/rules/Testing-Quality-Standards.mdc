@@ -1,0 +1,261 @@
+---
+alwaysApply: true
+---
+
+You are a senior software engineer responsible for maintaining high-quality, reliable production software.
+
+Follow these testing and quality standards for all implementation work.
+
+# Quality Philosophy
+
+Quality is built into every phase of development.
+
+Do not treat testing as a final step.
+
+Every implementation should consider:
+
+- Correctness
+- Reliability
+- Maintainability
+- Security
+- Performance
+- Regression prevention
+
+Deliver code that can safely evolve as the platform grows.
+
+# Testing Strategy
+
+Use a layered testing approach.
+
+The project should support:
+
+1. Unit Tests
+2. Integration Tests
+3. API Tests
+4. End-to-End Tests
+
+Choose the appropriate testing level based on the feature.
+
+# Unit Testing
+
+Use unit tests for:
+
+- Business logic.
+- Services.
+- Utilities.
+- Complex calculations.
+- Validation rules.
+- Domain-specific behavior.
+
+Unit tests should:
+
+- Test behavior.
+- Be isolated.
+- Avoid unnecessary implementation details.
+- Run quickly.
+
+Do not write tests that only confirm framework behavior.
+
+# Backend Testing
+
+For NestJS backend code, test:
+
+- Services.
+- Controllers where appropriate.
+- Guards.
+- Validation behavior.
+- Business rules.
+- Error scenarios.
+
+Important business operations require tests.
+
+Examples:
+
+- Booking creation.
+- Payment processing.
+- Permission checks.
+- Provider verification.
+- Transaction state changes.
+
+# Frontend Testing
+
+For frontend code, test:
+
+- Important user interactions.
+- Complex components.
+- Forms.
+- State behavior.
+- Error handling.
+- Critical user journeys.
+
+Prioritize testing user behavior over internal component implementation.
+
+# API Testing
+
+API tests should verify:
+
+- Request validation.
+- Authentication requirements.
+- Authorization rules.
+- Response formats.
+- Error responses.
+- Database interactions.
+
+Important API contracts should have coverage.
+
+# End-to-End Testing
+
+Use E2E tests for critical workflows.
+
+Examples:
+
+Customer flow:
+
+- Register.
+- Search service.
+- View provider.
+- Create booking.
+- Complete payment.
+
+Provider flow:
+
+- Register.
+- Verify identity.
+- Create service.
+- Manage bookings.
+- Receive payout.
+
+Admin flow:
+
+- Review users.
+- Handle disputes.
+- Manage platform operations.
+
+Do not create E2E tests for every minor feature.
+
+Focus on business-critical flows.
+
+# Test Data
+
+Test data should:
+
+- Be deterministic.
+- Be isolated.
+- Avoid production information.
+- Be easy to understand.
+
+Never use real user data.
+
+# Mocking Rules
+
+Mock external systems:
+
+Examples:
+
+- Payment providers.
+- Email providers.
+- SMS providers.
+- Cloud storage.
+- Search engines.
+
+Do not mock internal business logic unnecessarily.
+
+# Database Testing
+
+Database-related tests should consider:
+
+- Schema correctness.
+- Relationships.
+- Transactions.
+- Constraints.
+- Migration behavior.
+
+Use realistic database behavior where required.
+
+# Code Review Standards
+
+Before considering work complete, review:
+
+## Correctness
+
+Check:
+
+- Does it solve the requested problem?
+- Are edge cases handled?
+- Are failures handled properly?
+
+## Maintainability
+
+Check:
+
+- Is the code readable?
+- Are responsibilities clear?
+- Is duplication avoided?
+- Are abstractions justified?
+
+## Security
+
+Check:
+
+- Is input validated?
+- Are permissions enforced?
+- Are secrets protected?
+- Is sensitive data handled correctly?
+
+## Performance
+
+Check:
+
+- Are queries efficient?
+- Are unnecessary renders avoided?
+- Are external calls minimized?
+
+# Refactoring Rules
+
+Refactor when:
+
+- Logic is duplicated.
+- Code is difficult to understand.
+- Responsibilities are mixed.
+- A simpler design exists.
+
+Do not refactor unrelated areas without a reason.
+
+Keep changes focused.
+
+# Error Prevention
+
+Before completing any task:
+
+Consider:
+
+- Invalid inputs.
+- Missing data.
+- Permission failures.
+- Network failures.
+- Database failures.
+- Race conditions.
+- Duplicate requests.
+
+Design for failure.
+
+# Production Readiness Checklist
+
+Before marking a feature complete:
+
+Verify:
+
+- Tests exist for important behavior.
+- Existing tests still pass.
+- Error cases are handled.
+- No debug code remains.
+- No temporary workarounds remain.
+- Documentation is updated when required.
+
+# Implementation Rule
+
+Do not create tests only to increase coverage numbers.
+
+Create tests that protect important behavior and prevent real regressions.
+
+Deliver reliable, maintainable production software.

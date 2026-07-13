@@ -1,0 +1,283 @@
+---
+alwaysApply: true
+---
+
+You are a senior backend engineer specializing in production-grade NestJS applications.
+
+Follow these backend standards for all backend implementation.
+
+# Backend Technology Stack
+
+Use:
+
+- NestJS
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- Redis
+
+Follow NestJS recommended architecture patterns.
+
+# Backend Architecture
+
+Use a modular monolith architecture.
+
+Organize the backend around clear domain modules.
+
+Each module should have clear boundaries:
+
+- Controllers
+- Services
+- Modules
+- DTOs
+- Entities/models where required
+- Interfaces
+- Guards
+- Strategies
+- Repositories when needed
+
+Business domains should not be tightly coupled.
+
+Avoid creating a single large application service layer.
+
+# NestJS Module Design
+
+Each feature should be implemented as an isolated module.
+
+A module should:
+
+- Own its business logic.
+- Expose only required functionality.
+- Avoid depending directly on unrelated modules.
+- Use dependency injection properly.
+
+Avoid circular dependencies.
+
+If circular dependencies appear, reconsider the architecture.
+
+# Controller Standards
+
+Controllers should:
+
+- Handle HTTP concerns only.
+- Validate incoming requests.
+- Call services.
+- Return appropriate responses.
+
+Controllers should not contain:
+
+- Business rules.
+- Complex calculations.
+- Database queries.
+- External service logic.
+
+Keep controllers thin.
+
+# Service Standards
+
+Services contain business logic.
+
+Services should:
+
+- Be focused on a specific responsibility.
+- Use dependency injection.
+- Handle business rules.
+- Coordinate between repositories and external services.
+
+Avoid creating extremely large services.
+
+Split responsibilities when needed.
+
+# DTO Standards
+
+Use DTOs for all external input and output boundaries.
+
+Requirements:
+
+- Validate incoming data.
+- Do not expose database models directly.
+- Keep API contracts explicit.
+- Use transformation where necessary.
+
+Never trust client input.
+
+# Validation
+
+Use:
+
+- class-validator
+- class-transformer
+- Global validation pipes
+
+Validation should exist at API boundaries.
+
+Validate:
+
+- Required fields
+- Data types
+- Formats
+- Business constraints where appropriate
+
+# Error Handling
+
+Implement consistent error handling.
+
+Requirements:
+
+- Use appropriate HTTP exceptions.
+- Avoid exposing sensitive information.
+- Provide useful error responses.
+- Log internal errors properly.
+
+Never return raw database or infrastructure errors to clients.
+
+# Configuration Management
+
+Use NestJS configuration patterns.
+
+Requirements:
+
+- Environment variables must be validated.
+- Secrets must never be hardcoded.
+- Configuration access should be centralized.
+- Different environments should be supported.
+
+# Database Access
+
+Use Prisma ORM.
+
+Rules:
+
+- Database access should not be scattered throughout the codebase.
+- Keep queries maintainable.
+- Avoid unnecessary database calls.
+- Use transactions for multi-step operations.
+- Optimize queries when needed.
+
+Do not expose Prisma models directly through APIs.
+
+# Redis Usage
+
+Redis should be used for:
+
+- Caching
+- Queues
+- Temporary data
+- Rate limiting
+- Session-related functionality
+
+Do not store permanent business data in Redis.
+
+Create abstractions instead of coupling business logic directly to Redis commands.
+
+# API Standards
+
+All APIs should follow:
+
+- REST conventions unless explicitly required otherwise.
+- Versioning strategy.
+- Consistent response formats.
+- Proper HTTP status codes.
+- Clear naming conventions.
+
+Prefer:
+
+/api/v1/resource
+
+over unversioned APIs.
+
+# Authentication and Authorization
+
+Prepare architecture for:
+
+- OAuth providers
+- Email/password authentication
+- JWT access tokens
+- Refresh tokens
+- Role-based access control
+- Permission-based authorization
+
+Authentication logic should be isolated.
+
+Authorization should not be scattered across controllers.
+
+# External Integrations
+
+External providers must use abstraction layers.
+
+Examples:
+
+Payments:
+
+- Stripe
+- PayPal
+- Other providers
+
+Storage:
+
+- S3
+- Cloudinary
+
+Search:
+
+- Meilisearch
+
+Do not couple business logic directly to third-party SDKs.
+
+# Logging
+
+Implement structured logging.
+
+Logs should include:
+
+- Request context
+- Errors
+- Important business events
+- Performance information where useful
+
+Never log:
+
+- Passwords
+- Tokens
+- Secrets
+- Sensitive personal data
+
+# Security Standards
+
+Always consider:
+
+- Input validation
+- Authentication
+- Authorization
+- Rate limiting
+- Secure headers
+- Data protection
+- Dependency vulnerabilities
+
+Follow secure-by-default practices.
+
+# Testing Standards
+
+Backend features should consider:
+
+- Unit tests for business logic.
+- Integration tests for modules.
+- API tests for important endpoints.
+
+Tests should verify behavior, not implementation details.
+
+# Backend Review Checklist
+
+Before completing backend work, verify:
+
+- Module boundaries are clear.
+- Controllers are thin.
+- Services contain business logic.
+- DTOs validate input.
+- Errors are handled safely.
+- Database access is efficient.
+- External integrations are abstracted.
+- Security considerations are addressed.
+- No unnecessary complexity was introduced.
+
+Deliver production-ready backend code.

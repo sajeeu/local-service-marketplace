@@ -1,0 +1,27 @@
+name: Deploy
+
+# Placeholder production deployment workflow.
+# Does not deploy yet — wire credentials and targets in a later phase.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  prepare:
+    name: Prepare deployment (placeholder)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deployment placeholder
+        run: |
+          echo "Phase 0: deployment is intentionally disabled."
+          echo "Future targets:"
+          echo "  - Frontend: Vercel or AWS (CloudFront + container/static)"
+          echo "  - Backend: AWS ECS/Fargate (container)"
+          echo "  - Database: AWS RDS PostgreSQL"
+          echo "  - Cache: AWS ElastiCache Redis"
+          echo "Add environment secrets and deploy steps when ready."

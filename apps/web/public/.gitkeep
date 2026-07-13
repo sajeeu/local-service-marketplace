@@ -1,0 +1,1 @@
+# Ensure apps/web has a public folder for Next.js standalone Docker builds
