@@ -9,10 +9,12 @@
     "start": "next start --port 3000",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"No frontend tests yet\""
+    "test": "vitest run"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
     "@local-service-marketplace/shared-types": "workspace:*",
+    "@radix-ui/react-label": "^2.1.11",
     "@radix-ui/react-slot": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -20,6 +22,7 @@
     "next": "^15.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hook-form": "^7.81.0",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.24.1"
   },
@@ -27,11 +30,17 @@
     "@local-service-marketplace/config": "workspace:*",
     "@local-service-marketplace/eslint-config": "workspace:*",
     "@tailwindcss/postcss": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^6.0.3",
     "eslint": "^9.18.0",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.10"
   }
 }

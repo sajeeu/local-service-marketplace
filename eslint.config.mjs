@@ -10,9 +10,6 @@ import baseConfig from '@local-service-marketplace/eslint-config/base';
 export default [
   ...baseConfig,
   {
-    ignores: ['scripts/debug-*.mjs', '**/debug-*.log'],
-  },
-  {
     // Nest DI relies on emitDecoratorMetadata; never type-only injected imports.
     files: ['apps/api/**/*.{ts,js}'],
     rules: {

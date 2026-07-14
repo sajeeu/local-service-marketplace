@@ -1,4 +1,4 @@
-# Architecture — Phase 0
+# Architecture — Phase 1
 
 ## Modular monolith
 
@@ -18,42 +18,50 @@ Shared packages contain **contracts and tooling only** — never business logic.
 
 - Server Components by default
 - Tailwind CSS + shadcn/ui primitives
-- Central API client (`src/lib/api-client.ts`)
+- Central API client (`src/lib/api-client.ts`) with Bearer auth support
 - Zod-validated public env (`src/lib/env.ts`)
-- Route group stubs for future `(auth)`, `(dashboard)`, `(provider)`, `(admin)`
+- Auth route group `(auth)`: `/login`, `/register`, `/forgot-password`, `/reset-password`
+- Protected `/account` page (identity only)
+- Middleware session cookie gate for `/account` and auth pages
 
 ### `apps/api` (NestJS)
 
 - Global prefix `api` + URI versioning → `/api/v1/...`
-- Config module with Zod env validation
+- Config module with Zod env validation (including JWT secrets)
 - Global validation pipe, exception filter, response interceptor
-- Swagger at `/api/docs`
-- Prisma (`infrastructure/database`) and Redis (`infrastructure/redis`) abstractions
+- Swagger at `/api/docs` with Bearer auth
+- Prisma + Redis infrastructure modules
 - Health endpoint: `GET /api/v1/health`
-- Empty module folders for future domains under `src/modules/`
+- **Identity module**: register, login, refresh, logout, me, forgot/reset password
+- Global JWT + Roles + Permissions + Throttler guards
 
 ## Packages
 
-| Package         | Role                                 |
-| --------------- | ------------------------------------ |
-| `shared-types`  | API response / health contract types |
-| `config`        | Base TypeScript configs              |
-| `eslint-config` | Shared ESLint flat configs           |
+| Package         | Role                                   |
+| --------------- | -------------------------------------- |
+| `shared-types`  | API response + auth identity contracts |
+| `config`        | Base TypeScript configs                |
+| `eslint-config` | Shared ESLint flat configs             |
 
 ## Data foundations
 
-- **PostgreSQL** via Prisma — schema exists with **no marketplace models** in Phase 0
-- **Redis** via `ioredis` — connection + ping only (no cache/queue logic yet)
+- **PostgreSQL** via Prisma — identity models: User, Role, Permission, UserRole, RolePermission, RefreshToken, PasswordResetToken, AuditLog
+- **Redis** via `ioredis` — connectivity ready for future rate-limit/cache usage
+- Seed creates roles (`CUSTOMER`, `PROVIDER`, `BUSINESS`, `ADMIN`) and permissions (`user.read`, `user.manage`)
+
+## Identity & access
+
+- Access JWT (short-lived) + refresh JWT (hashed at rest, rotated on refresh)
+- Default registration role: `CUSTOMER`
+- Password reset without email: non-production responses may include `resetToken`
+- Audit log records auth and password-reset events
 
 ## Future domains (not implemented)
 
-Identity, Users, Providers, Services, Bookings, Payments, Reviews, Notifications, Search, Admin.
+Users profiles, Providers, Services, Bookings, Payments, Reviews, Notifications, Search, Admin.
 
 ## Local development topology
 
-Recommended daily flow:
-
 1. `docker compose up -d postgres redis`
-2. `pnpm dev:api` / `pnpm dev:web`
-
-Optional: `docker compose --profile full up --build` runs api + web containers as well.
+2. `pnpm db:migrate` / `pnpm db:seed` when schema changes
+3. `pnpm dev:api` / `pnpm dev:web`

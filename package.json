@@ -19,6 +19,7 @@
     "test": "pnpm run --recursive --filter \"./apps/*\" test",
     "db:generate": "pnpm --filter @local-service-marketplace/api db:generate",
     "db:migrate": "pnpm --filter @local-service-marketplace/api db:migrate",
+    "db:seed": "pnpm --filter @local-service-marketplace/api db:seed",
     "db:studio": "pnpm --filter @local-service-marketplace/api db:studio",
     "prepare": "husky"
   },

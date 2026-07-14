@@ -2,7 +2,7 @@
 
 Multi-tenant local service marketplace connecting customers and service providers. This repository is a **modular monolith** monorepo.
 
-> **Phase 0** establishes project foundation only — no marketplace domain features yet.
+> **Phase 1** delivers identity and access foundation (auth, JWT, RBAC, audit). Marketplace domain features come next.
 
 ## Architecture
 
@@ -76,13 +76,14 @@ Defaults point at local Docker Postgres (`localhost:5433`) / Redis and `http://l
 
 > Host port **5433** is used for PostgreSQL to avoid clashing with other local Postgres instances on `5432`. Inside Docker Compose the database still listens on `5432`.
 
-### 4. Generate Prisma client
+### 4. Database migrate and seed
 
 ```bash
-pnpm db:generate
+pnpm db:migrate
+pnpm db:seed
 ```
 
-> Phase 0 has no marketplace models. Migrations will be introduced when domain schemas are added.
+Identity models (User, Role, Permission, tokens, AuditLog) live in Prisma. Seed creates system roles and base permissions.
 
 ### 5. Run applications
 
@@ -98,20 +99,27 @@ pnpm dev:web   # http://localhost:3000
 - API health: `http://localhost:3001/api/v1/health`
 - Swagger: `http://localhost:3001/api/docs`
 - Web: `http://localhost:3000`
+- Auth: `/login`, `/register`, `/account`
 
 ## Environment variables
 
 ### API (`apps/api/.env`)
 
-| Variable       | Purpose                               |
-| -------------- | ------------------------------------- |
-| `NODE_ENV`     | `development` / `test` / `production` |
-| `PORT`         | API port (default `3001`)             |
-| `DATABASE_URL` | PostgreSQL connection string          |
-| `REDIS_URL`    | Redis connection string               |
-| `CORS_ORIGINS` | Comma-separated allowed origins       |
+| Variable                    | Purpose                               |
+| --------------------------- | ------------------------------------- |
+| `NODE_ENV`                  | `development` / `test` / `production` |
+| `PORT`                      | API port (default `3001`)             |
+| `DATABASE_URL`              | PostgreSQL connection string          |
+| `REDIS_URL`                 | Redis connection string               |
+| `CORS_ORIGINS`              | Comma-separated allowed origins       |
+| `JWT_ACCESS_SECRET`         | Access token signing secret (≥32)     |
+| `JWT_REFRESH_SECRET`        | Refresh token signing secret (≥32)    |
+| `JWT_ACCESS_EXPIRES_IN`     | Access token TTL (default `15m`)      |
+| `JWT_REFRESH_EXPIRES_IN`    | Refresh token TTL (default `7d`)      |
+| `BCRYPT_SALT_ROUNDS`        | Password hash cost (default `12`)     |
+| `PASSWORD_RESET_EXPIRES_IN` | Reset token TTL (default `1h`)        |
 
-Placeholders for future providers (JWT, Stripe, AWS, Cloudinary, Meilisearch) are documented in `.env.example`.
+Placeholders for future providers (Stripe, AWS, Cloudinary, Meilisearch) are documented in `.env.example`.
 
 ### Web (`apps/web/.env.local`)
 
@@ -129,9 +137,10 @@ Placeholders for future providers (JWT, Stripe, AWS, Cloudinary, Meilisearch) ar
 | `pnpm lint`        | Lint apps and packages             |
 | `pnpm format`      | Format with Prettier               |
 | `pnpm typecheck`   | TypeScript checks                  |
-| `pnpm test`        | Run tests (placeholder-ready)      |
+| `pnpm test`        | Run API + web tests                |
 | `pnpm db:generate` | Generate Prisma client             |
 | `pnpm db:migrate`  | Run Prisma migrate (dev)           |
+| `pnpm db:seed`     | Seed roles and permissions         |
 | `pnpm db:studio`   | Open Prisma Studio                 |
 
 ## Code quality

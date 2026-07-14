@@ -1,12 +1,13 @@
-# Future domain modules
+# Domain modules
 
-Placeholder directories for upcoming NestJS domain modules.
+NestJS domain modules for the modular monolith.
 
-Do not implement business logic here in Phase 0.
+## Implemented
 
-Planned modules:
+- **identity** — authentication, JWT sessions, roles, permissions, audit foundation
 
-- identity
+## Planned
+
 - users
 - providers
 - services

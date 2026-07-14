@@ -26,16 +26,13 @@ export default function HomePage() {
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Button asChild>
-            <Link href="/api-status">Check API status</Link>
+            <Link href="/register">Create account</Link>
           </Button>
           <Button asChild variant="secondary">
-            <a
-              href={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') ?? 'http://localhost:3001'}/api/docs`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open API docs
-            </a>
+            <Link href="/login">Sign in</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/api-status">Check API status</Link>
           </Button>
         </div>
       </div>
