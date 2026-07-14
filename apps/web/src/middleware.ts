@@ -11,8 +11,9 @@ export function middleware(request: NextRequest): NextResponse {
   );
   const isAccountRoute = pathname === '/account' || pathname.startsWith('/account/');
   const isOrganizationRoute = pathname === '/organization' || pathname.startsWith('/organization/');
+  const isProviderRoute = pathname === '/provider' || pathname.startsWith('/provider/');
 
-  if ((isAccountRoute || isOrganizationRoute) && !isAuthenticated) {
+  if ((isAccountRoute || isOrganizationRoute || isProviderRoute) && !isAuthenticated) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
@@ -29,6 +30,7 @@ export const config = {
   matcher: [
     '/account/:path*',
     '/organization/:path*',
+    '/provider/:path*',
     '/login',
     '/register',
     '/forgot-password',

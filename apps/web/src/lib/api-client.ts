@@ -7,12 +7,21 @@ import type {
   AuthTokens,
   AuthUser,
   CreateOrganizationRequest,
+  CreateProviderAvailabilityRequest,
   CurrentTenantResponse,
   ForgotPasswordResponse,
   HealthCheckResult,
   MessageResponse,
+  ProviderAvailabilityDto,
+  ProviderListResponse,
+  ProviderPrivateProfileDto,
+  ProviderPublicProfileDto,
   RegisterRequest,
+  ReviewProviderVerificationRequest,
+  SubmitProviderVerificationRequest,
   TenantListItem,
+  UpdateProviderAvailabilityRequest,
+  UpdateProviderProfileRequest,
 } from '@local-service-marketplace/shared-types';
 import { env } from './env';
 import { getAccessToken, getActiveTenantId } from '@/features/auth/session';
@@ -163,6 +172,90 @@ export const apiClient = {
   createOrganization(input: CreateOrganizationRequest): Promise<AuthSessionResponse> {
     return request<AuthSessionResponse>('organizations', {
       method: 'POST',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  getMyProvider(): Promise<ProviderPrivateProfileDto> {
+    return request<ProviderPrivateProfileDto>('providers/me', { auth: true });
+  },
+
+  updateMyProvider(input: UpdateProviderProfileRequest): Promise<ProviderPrivateProfileDto> {
+    return request<ProviderPrivateProfileDto>('providers/me', {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  listProviders(page = 1, limit = 20): Promise<ProviderListResponse> {
+    return request<ProviderListResponse>(`providers?page=${page}&limit=${limit}`, {
+      auth: true,
+    });
+  },
+
+  updateProvider(
+    id: string,
+    input: UpdateProviderProfileRequest,
+  ): Promise<ProviderPrivateProfileDto> {
+    return request<ProviderPrivateProfileDto>(`providers/${id}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  getPublicProvider(id: string): Promise<ProviderPublicProfileDto> {
+    return request<ProviderPublicProfileDto>(`providers/${id}`);
+  },
+
+  listMyAvailability(): Promise<ProviderAvailabilityDto[]> {
+    return request<ProviderAvailabilityDto[]>('providers/me/availability', { auth: true });
+  },
+
+  createMyAvailability(input: CreateProviderAvailabilityRequest): Promise<ProviderAvailabilityDto> {
+    return request<ProviderAvailabilityDto>('providers/me/availability', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  updateMyAvailability(
+    availabilityId: string,
+    input: UpdateProviderAvailabilityRequest,
+  ): Promise<ProviderAvailabilityDto> {
+    return request<ProviderAvailabilityDto>(`providers/me/availability/${availabilityId}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  deleteMyAvailability(availabilityId: string): Promise<MessageResponse> {
+    return request<MessageResponse>(`providers/me/availability/${availabilityId}`, {
+      method: 'DELETE',
+      auth: true,
+    });
+  },
+
+  submitMyVerification(
+    input: SubmitProviderVerificationRequest,
+  ): Promise<ProviderPrivateProfileDto> {
+    return request<ProviderPrivateProfileDto>('providers/me/verification', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  reviewProviderVerification(
+    providerId: string,
+    input: ReviewProviderVerificationRequest,
+  ): Promise<ProviderPrivateProfileDto> {
+    return request<ProviderPrivateProfileDto>(`admin/providers/${providerId}/verification`, {
+      method: 'PATCH',
       auth: true,
       body: JSON.stringify(input),
     });

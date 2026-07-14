@@ -44,6 +44,14 @@ enum MembershipStatus {
   LEFT
 }
 
+enum ProviderVerificationStatus {
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  SUSPENDED
+}
+
 model User {
   id              String     @id @default(uuid())
   email           String     @unique
@@ -60,6 +68,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   auditLogs           AuditLog[]           @relation("AuditActor")
   memberships         Membership[]
+  providers           Provider[]
+  verificationReviews ProviderVerification[] @relation("VerificationReviewer")
 
   @@index([status])
   @@index([createdAt])
@@ -176,6 +186,7 @@ model Tenant {
   organization   Organization?
   memberships    Membership[]
   activeUsers    User[]         @relation("UserActiveTenant")
+  providers      Provider[]
 
   @@index([status])
   @@index([type])
@@ -215,4 +226,122 @@ model Membership {
   @@index([userId])
   @@index([tenantId])
   @@index([status])
+}
+
+model Provider {
+  id                 String                      @id @default(uuid())
+  tenantId           String
+  userId             String
+  displayName        String
+  bio                String?
+  profilePhoto       String?
+  yearsOfExperience  Int                         @default(0)
+  verificationStatus ProviderVerificationStatus  @default(PENDING)
+  averageRating      Float                       @default(0)
+  completedJobs      Int                         @default(0)
+  responseRate       Float?
+  responseTime       Int?
+  isActive           Boolean                     @default(true)
+  createdAt          DateTime                    @default(now())
+  updatedAt          DateTime                    @updatedAt
+
+  tenant         Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user           User                     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  qualifications ProviderQualification[]
+  certifications ProviderCertification[]
+  languages      ProviderLanguage[]
+  availability   ProviderAvailability[]
+  verifications  ProviderVerification[]
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([verificationStatus])
+  @@index([isActive])
+  @@index([createdAt])
+}
+
+model ProviderQualification {
+  id          String    @id @default(uuid())
+  providerId  String
+  title       String
+  issuer      String
+  issueDate   DateTime
+  expiryDate  DateTime?
+  documentUrl String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+}
+
+model ProviderCertification {
+  id           String    @id @default(uuid())
+  providerId   String
+  name         String
+  issuer       String
+  issueDate    DateTime?
+  expiryDate   DateTime?
+  credentialId String?
+  documentUrl  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+}
+
+model ProviderLanguage {
+  id          String   @id @default(uuid())
+  providerId  String
+  code        String
+  label       String
+  proficiency String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, code])
+  @@index([providerId])
+}
+
+model ProviderAvailability {
+  id         String   @id @default(uuid())
+  providerId String
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
+  timezone   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([dayOfWeek])
+}
+
+model ProviderVerification {
+  id               String                     @id @default(uuid())
+  providerId       String
+  status           ProviderVerificationStatus @default(UNDER_REVIEW)
+  submittedAt      DateTime                   @default(now())
+  reviewedAt       DateTime?
+  reviewedByUserId String?
+  rejectionReason  String?
+  documentMetadata Json?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("VerificationReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([providerId])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([reviewedByUserId])
 }

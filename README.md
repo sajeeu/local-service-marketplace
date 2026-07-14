@@ -2,7 +2,7 @@
 
 Multi-tenant local service marketplace connecting customers and service providers. This repository is a **modular monolith** monorepo.
 
-> **Phase 2** delivers tenant and organization management (multi-tenant ownership boundaries, memberships, tenant switching). Marketplace domain features come next.
+> **Phase 3** delivers provider profiles and verification foundation (professional info, availability, public profiles). Service catalog, bookings, and payments come next.
 
 ## Architecture
 

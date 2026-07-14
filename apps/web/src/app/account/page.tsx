@@ -66,6 +66,9 @@ function AccountContent() {
   const ownsBusiness = tenants.some(
     (item) => item.tenant.type === 'BUSINESS' && item.membership.role === 'OWNER',
   );
+  const canManageProvider = user?.roles.some(
+    (role) => role === 'PROVIDER' || role === 'BUSINESS' || role === 'ADMIN',
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -137,6 +140,11 @@ function AccountContent() {
           <Button onClick={() => void handleLogout()} disabled={loggingOut}>
             {loggingOut ? 'Signing out…' : 'Sign out'}
           </Button>
+          {canManageProvider ? (
+            <Button asChild variant="secondary">
+              <Link href="/provider/profile">Provider workspace</Link>
+            </Button>
+          ) : null}
           {!ownsBusiness ? (
             <Button asChild variant="secondary">
               <Link href="/organization/create">Create organization</Link>

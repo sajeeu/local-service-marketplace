@@ -17,6 +17,10 @@ const PERMISSIONS: Array<{ code: string; description: string }> = [
   { code: 'organization.read', description: 'Read organization information' },
   { code: 'organization.manage', description: 'Manage organization details' },
   { code: 'membership.read', description: 'Read tenant memberships' },
+  { code: 'provider.read', description: 'Read provider profiles' },
+  { code: 'provider.manage', description: 'Manage provider profiles' },
+  { code: 'provider.verification.submit', description: 'Submit provider verification' },
+  { code: 'provider.verification.review', description: 'Review provider verification' },
 ];
 
 async function main(): Promise<void> {
@@ -42,7 +46,15 @@ async function main(): Promise<void> {
 
   const rolePermissionMap: Record<RoleName, string[]> = {
     [RoleName.CUSTOMER]: ['user.read', 'tenant.read', 'tenant.switch', 'membership.read'],
-    [RoleName.PROVIDER]: ['user.read', 'tenant.read', 'tenant.switch', 'membership.read'],
+    [RoleName.PROVIDER]: [
+      'user.read',
+      'tenant.read',
+      'tenant.switch',
+      'membership.read',
+      'provider.read',
+      'provider.manage',
+      'provider.verification.submit',
+    ],
     [RoleName.BUSINESS]: [
       'user.read',
       'tenant.read',
@@ -50,6 +62,9 @@ async function main(): Promise<void> {
       'organization.read',
       'organization.manage',
       'membership.read',
+      'provider.read',
+      'provider.manage',
+      'provider.verification.submit',
     ],
     [RoleName.ADMIN]: [
       'user.read',
@@ -59,6 +74,10 @@ async function main(): Promise<void> {
       'organization.read',
       'organization.manage',
       'membership.read',
+      'provider.read',
+      'provider.manage',
+      'provider.verification.submit',
+      'provider.verification.review',
     ],
   };
 

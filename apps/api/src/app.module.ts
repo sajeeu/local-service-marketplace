@@ -5,6 +5,7 @@ import { HealthModule } from './health/health.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
 import { IdentityModule } from './modules/identity/identity.module';
+import { ProvidersModule } from './modules/providers/providers.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { TenancyModule } from './modules/tenancy/tenancy.module';
     HealthModule,
     IdentityModule,
     TenancyModule,
+    ProvidersModule,
   ],
 })
 export class AppModule {}

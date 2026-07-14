@@ -6,11 +6,11 @@ NestJS domain modules for the modular monolith.
 
 - **identity** — authentication, JWT sessions, roles, permissions, audit foundation
 - **tenancy** — tenants, organizations, memberships, tenant context, tenant switching
+- **providers** — provider profiles, qualifications/certifications/languages, weekly availability, verification submit/review, public profiles, storage port stub
 
 ## Planned
 
 - users
-- providers
 - services
 - bookings
 - payments

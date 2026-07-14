@@ -1,4 +1,4 @@
-# Architecture — Phase 1 + Phase 2
+# Architecture — Phase 1 + Phase 2 + Phase 3
 
 ## Modular monolith
 
@@ -23,8 +23,9 @@ Shared packages contain **contracts and tooling only** — never business logic.
 - Auth route group `(auth)`: `/login`, `/register`, `/forgot-password`, `/reset-password`
 - Protected `/account` page (identity + tenant selector)
 - Protected `/organization/create` for business organization upgrade
+- Provider workspace `(provider)`: `/provider/onboarding`, `/provider/profile`, `/provider/profile/edit`, `/provider/availability`
 - Tenant provider / selector / organization form foundation
-- Middleware session cookie gate for `/account`, `/organization/*`, and auth pages
+- Middleware session cookie gate for `/account`, `/organization/*`, `/provider/*`, and auth pages
 
 ### `apps/api` (NestJS)
 
@@ -36,23 +37,35 @@ Shared packages contain **contracts and tooling only** — never business logic.
 - Health endpoint: `GET /api/v1/health`
 - **Identity module**: register (account types), login, refresh, logout, me, forgot/reset password
 - **Tenancy module**: tenants list/current/switch, organization create, TenantGuard
+- **Providers module**: profiles, availability, verification submit/review, public profiles, storage port stub
 - Global JWT + Roles + Permissions + Throttler guards
 
 ## Packages
 
-| Package         | Role                                    |
-| --------------- | --------------------------------------- |
-| `shared-types`  | API response + auth + tenancy contracts |
-| `config`        | Base TypeScript configs                 |
-| `eslint-config` | Shared ESLint flat configs              |
+| Package         | Role                                               |
+| --------------- | -------------------------------------------------- |
+| `shared-types`  | API response + auth + tenancy + provider contracts |
+| `config`        | Base TypeScript configs                            |
+| `eslint-config` | Shared ESLint flat configs                         |
 
 ## Data foundations
 
-- **PostgreSQL** via Prisma — identity + tenancy models:
+- **PostgreSQL** via Prisma — identity, tenancy, and provider models:
   - Identity: User, Role, Permission, UserRole, RolePermission, RefreshToken, PasswordResetToken, AuditLog
   - Tenancy: Tenant, Organization, Membership (`User.activeTenantId`)
+  - Providers: Provider, ProviderQualification, ProviderCertification, ProviderLanguage, ProviderAvailability, ProviderVerification
 - **Redis** via `ioredis` — connectivity ready for future rate-limit/cache usage
-- Seed creates roles (`CUSTOMER`, `PROVIDER`, `BUSINESS`, `ADMIN`) and permissions including tenant/organization codes
+- Seed creates roles (`CUSTOMER`, `PROVIDER`, `BUSINESS`, `ADMIN`) and permissions including tenant/organization/provider codes
+
+### Provider domain notes
+
+- A **Provider** is not a user account. Users authenticate; providers perform work.
+- One provider profile per `(userId, tenantId)`:
+  - Independent provider → individual tenant
+  - Business-employed provider → business tenant
+- Verification statuses: `PENDING`, `UNDER_REVIEW`, `VERIFIED`, `REJECTED`, `SUSPENDED`
+- Metrics (`averageRating`, `completedJobs`, etc.) are stored for future booking/review phases
+- Media fields store URLs; `StoragePort` abstracts future S3/Cloudinary uploads
 
 ## Identity & access
 
@@ -61,8 +74,9 @@ Shared packages contain **contracts and tooling only** — never business logic.
   - Customer/Provider → individual tenant + OWNER membership
   - Business → business tenant + organization + OWNER membership
 - Active tenant resolved server-side: `X-Tenant-Id` header → JWT `tid` → `User.activeTenantId` (membership always validated)
+- Provider permissions: `provider.read`, `provider.manage`, `provider.verification.submit`, `provider.verification.review` (admin)
 - Password reset without email: non-production responses may include `resetToken`
-- Audit log records auth, tenant, organization, and membership events
+- Audit log records auth, tenant, organization, membership, and provider events
 
 ## Tenancy API
 
@@ -73,9 +87,25 @@ Shared packages contain **contracts and tooling only** — never business logic.
 | `POST` | `/api/v1/tenants/switch`  | Switch active tenant                     |
 | `POST` | `/api/v1/organizations`   | Create owned business org (one per user) |
 
+## Provider API
+
+| Method   | Path                                       | Purpose                                         |
+| -------- | ------------------------------------------ | ----------------------------------------------- |
+| `GET`    | `/api/v1/providers/me`                     | Ensure/get private profile (active tenant)      |
+| `PATCH`  | `/api/v1/providers/me`                     | Update own profile + professional data          |
+| `GET`    | `/api/v1/providers`                        | List providers in active tenant                 |
+| `PATCH`  | `/api/v1/providers/:id`                    | Update provider (self / business admin / admin) |
+| `GET`    | `/api/v1/providers/:id`                    | Public profile (no private fields)              |
+| `GET`    | `/api/v1/providers/me/availability`        | List weekly availability                        |
+| `POST`   | `/api/v1/providers/me/availability`        | Create availability slot                        |
+| `PATCH`  | `/api/v1/providers/me/availability/:id`    | Update availability slot                        |
+| `DELETE` | `/api/v1/providers/me/availability/:id`    | Delete availability slot                        |
+| `POST`   | `/api/v1/providers/me/verification`        | Submit verification document metadata           |
+| `PATCH`  | `/api/v1/admin/providers/:id/verification` | Admin approve / reject / suspend                |
+
 ## Future domains (not implemented)
 
-Provider profiles, Staff invitations, Services, Bookings, Payments, Reviews, Notifications, Search, Admin dashboards.
+Staff invitations, Services, Bookings, Payments, Reviews, Notifications, Search, Admin dashboards, calendar sync, cloud file uploads.
 
 ## Local development topology
 
