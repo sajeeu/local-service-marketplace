@@ -4,10 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { registerSchema, type RegisterFormValues } from '../schemas';
 import { persistSession } from '../session';
@@ -18,12 +19,21 @@ export function RegisterForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      accountType: 'CUSTOMER',
+      organizationName: '',
+    },
   });
+
+  const accountType = useWatch({ control, name: 'accountType' });
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
@@ -31,6 +41,8 @@ export function RegisterForm() {
       const session = await apiClient.register({
         email: values.email,
         password: values.password,
+        accountType: values.accountType,
+        organizationName: values.accountType === 'BUSINESS' ? values.organizationName : undefined,
       });
       await persistSession(session);
       router.push('/account');
@@ -44,6 +56,40 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
+      <div className="space-y-2">
+        <Label htmlFor="accountType">Account type</Label>
+        <Select
+          id="accountType"
+          aria-invalid={Boolean(errors.accountType)}
+          {...register('accountType')}
+        >
+          <option value="CUSTOMER">Customer</option>
+          <option value="PROVIDER">Provider</option>
+          <option value="BUSINESS">Business</option>
+        </Select>
+        {errors.accountType ? (
+          <p className="text-sm text-destructive" role="alert">
+            {errors.accountType.message}
+          </p>
+        ) : null}
+      </div>
+
+      {accountType === 'BUSINESS' ? (
+        <div className="space-y-2">
+          <Label htmlFor="organizationName">Organization name</Label>
+          <Input
+            id="organizationName"
+            aria-invalid={Boolean(errors.organizationName)}
+            {...register('organizationName')}
+          />
+          {errors.organizationName ? (
+            <p className="text-sm text-destructive" role="alert">
+              {errors.organizationName.message}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input

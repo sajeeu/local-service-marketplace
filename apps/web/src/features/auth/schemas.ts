@@ -18,10 +18,24 @@ export const registerSchema = z
     email: z.string().email('Enter a valid email'),
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Confirm your password'),
+    accountType: z.enum(['CUSTOMER', 'PROVIDER', 'BUSINESS']),
+    organizationName: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
+  })
+  .superRefine((data, ctx) => {
+    if (data.accountType === 'BUSINESS') {
+      const name = data.organizationName?.trim() ?? '';
+      if (name.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Organization name is required for business accounts',
+          path: ['organizationName'],
+        });
+      }
+    }
   });
 
 export const forgotPasswordSchema = z.object({

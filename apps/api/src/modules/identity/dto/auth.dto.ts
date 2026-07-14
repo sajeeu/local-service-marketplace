@@ -1,5 +1,19 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsEnum,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
+
+export enum AccountTypeDto {
+  CUSTOMER = 'CUSTOMER',
+  PROVIDER = 'PROVIDER',
+  BUSINESS = 'BUSINESS',
+}
 
 export class RegisterDto {
   @ApiProperty({ example: 'customer@example.com' })
@@ -19,6 +33,20 @@ export class RegisterDto {
     message: 'Password must include upper, lower, and a number',
   })
   password!: string;
+
+  @ApiProperty({ enum: AccountTypeDto, example: AccountTypeDto.CUSTOMER })
+  @IsEnum(AccountTypeDto)
+  accountType!: AccountTypeDto;
+
+  @ApiPropertyOptional({
+    example: 'Acme Home Services',
+    description: 'Required when accountType is BUSINESS',
+  })
+  @ValidateIf((dto: RegisterDto) => dto.accountType === AccountTypeDto.BUSINESS)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(200)
+  organizationName?: string;
 }
 
 export class LoginDto {

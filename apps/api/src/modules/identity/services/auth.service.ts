@@ -1,7 +1,14 @@
-import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RoleName, UserStatus, type User } from '@prisma/client';
 import type {
+  AuthIdentityResponse,
   AuthSessionResponse,
   AuthUser,
   ForgotPasswordResponse,
@@ -9,7 +16,13 @@ import type {
 } from '@local-service-marketplace/shared-types';
 import type { AppConfig } from '../../../config/env.validation';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
+import { TenantContextService } from '../../tenancy/services/tenant-context.service';
+import {
+  TenancyProvisionService,
+  type RegisterAccountType,
+} from '../../tenancy/services/tenancy-provision.service';
 import type { RequestContextMeta } from '../interfaces/auth.interfaces';
+import { AccountTypeDto } from '../dto/auth.dto';
 import { AuditService } from './audit.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
@@ -35,11 +48,15 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly auditService: AuditService,
     private readonly configService: ConfigService<AppConfig, true>,
+    private readonly tenancyProvisionService: TenancyProvisionService,
+    private readonly tenantContextService: TenantContextService,
   ) {}
 
   async register(
     email: string,
     password: string,
+    accountType: AccountTypeDto,
+    organizationName: string | undefined,
     meta: RequestContextMeta = {},
   ): Promise<AuthSessionResponse> {
     const normalizedEmail = email.trim().toLowerCase();
@@ -51,28 +68,56 @@ export class AuthService {
       throw new ConflictException('An account with this email already exists');
     }
 
-    const customerRole = await this.prisma.role.findUnique({
-      where: { name: RoleName.CUSTOMER },
+    if (accountType === AccountTypeDto.BUSINESS && !organizationName?.trim()) {
+      throw new BadRequestException('Organization name is required for business accounts');
+    }
+
+    const roleName = this.roleForAccountType(accountType);
+    const role = await this.prisma.role.findUnique({
+      where: { name: roleName },
     });
 
-    if (!customerRole) {
-      throw new Error('CUSTOMER role is not seeded');
+    if (!role) {
+      throw new Error(`${roleName} role is not seeded`);
     }
 
     const passwordHash = await this.passwordService.hash(password);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: normalizedEmail,
-        passwordHash,
-        status: UserStatus.ACTIVE,
-        roles: {
-          create: {
-            roleId: customerRole.id,
+    const { user, tenantContext } = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: normalizedEmail,
+          passwordHash,
+          status: UserStatus.ACTIVE,
+          roles: {
+            create: {
+              roleId: role.id,
+            },
           },
         },
-      },
-      include: this.userInclude(),
+      });
+
+      const context = await this.tenancyProvisionService.provisionForRegistration(
+        {
+          userId: created.id,
+          email: normalizedEmail,
+          accountType: accountType as RegisterAccountType,
+          organizationName,
+        },
+        tx,
+        meta,
+      );
+
+      const withRoles = await tx.user.findUnique({
+        where: { id: created.id },
+        include: this.userInclude(),
+      });
+
+      if (!withRoles) {
+        throw new Error('Failed to load user after registration');
+      }
+
+      return { user: withRoles, tenantContext: context };
     });
 
     await this.auditService.log({
@@ -80,16 +125,63 @@ export class AuthService {
       action: 'USER_REGISTERED',
       resourceType: 'User',
       resourceId: user.id,
+      metadata: {
+        accountType,
+        tenantId: tenantContext.tenant.id,
+        tenantType: tenantContext.tenant.type,
+      },
+      ipAddress: meta.ipAddress,
+      userAgent: meta.userAgent,
+    });
+
+    await this.auditService.log({
+      actorUserId: user.id,
+      action: 'TENANT_CREATED',
+      resourceType: 'Tenant',
+      resourceId: tenantContext.tenant.id,
+      metadata: { type: tenantContext.tenant.type, source: 'registration' },
+      ipAddress: meta.ipAddress,
+      userAgent: meta.userAgent,
+    });
+
+    if (tenantContext.organization) {
+      await this.auditService.log({
+        actorUserId: user.id,
+        action: 'ORGANIZATION_CREATED',
+        resourceType: 'Organization',
+        resourceId: tenantContext.organization.id,
+        metadata: { tenantId: tenantContext.tenant.id, source: 'registration' },
+        ipAddress: meta.ipAddress,
+        userAgent: meta.userAgent,
+      });
+    }
+
+    await this.auditService.log({
+      actorUserId: user.id,
+      action: 'MEMBERSHIP_CREATED',
+      resourceType: 'Membership',
+      resourceId: tenantContext.membership.id,
+      metadata: {
+        tenantId: tenantContext.tenant.id,
+        role: tenantContext.membership.role,
+        source: 'registration',
+      },
       ipAddress: meta.ipAddress,
       userAgent: meta.userAgent,
     });
 
     const roles = this.extractRoles(user);
-    const tokens = await this.tokenService.issueTokenPair(user, roles, meta);
+    const tokens = await this.tokenService.issueTokenPair(
+      user,
+      roles,
+      meta,
+      tenantContext.tenant.id,
+    );
 
     return {
       user: this.toAuthUser(user),
       tokens,
+      tenantContext,
     };
   }
 
@@ -140,7 +232,8 @@ export class AuthService {
     }
 
     const roles = this.extractRoles(user);
-    const tokens = await this.tokenService.issueTokenPair(user, roles, meta);
+    const tokens = await this.tokenService.issueTokenPair(user, roles, meta, user.activeTenantId);
+    const tenantContext = await this.tenantContextService.getCurrentForUser(user.id);
 
     await this.auditService.log({
       actorUserId: user.id,
@@ -154,6 +247,7 @@ export class AuthService {
     return {
       user: this.toAuthUser(user),
       tokens,
+      tenantContext,
     };
   }
 
@@ -177,9 +271,12 @@ export class AuthService {
       userAgent: meta.userAgent,
     });
 
+    const tenantContext = await this.tenantContextService.getCurrentForUser(user.id);
+
     return {
       user: this.toAuthUser(user),
       tokens,
+      tenantContext,
     };
   }
 
@@ -201,7 +298,7 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
-  async me(userId: string): Promise<AuthUser> {
+  async me(userId: string): Promise<AuthIdentityResponse> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: this.userInclude(),
@@ -211,7 +308,12 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return this.toAuthUser(user);
+    const tenantContext = await this.tenantContextService.getCurrentForUser(userId);
+
+    return {
+      user: this.toAuthUser(user),
+      tenantContext,
+    };
   }
 
   async forgotPassword(
@@ -321,6 +423,18 @@ export class AuthService {
     return this.extractPermissions(user);
   }
 
+  private roleForAccountType(accountType: AccountTypeDto): RoleName {
+    switch (accountType) {
+      case AccountTypeDto.PROVIDER:
+        return RoleName.PROVIDER;
+      case AccountTypeDto.BUSINESS:
+        return RoleName.BUSINESS;
+      case AccountTypeDto.CUSTOMER:
+      default:
+        return RoleName.CUSTOMER;
+    }
+  }
+
   private userInclude() {
     return {
       roles: {
@@ -358,6 +472,7 @@ export class AuthService {
       emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
       roles: this.extractRoles(user),
       permissions: this.extractPermissions(user),
+      activeTenantId: user.activeTenantId,
       createdAt: user.createdAt.toISOString(),
     };
   }

@@ -2,14 +2,20 @@ import type {
   ApiErrorResponse,
   ApiResponse,
   ApiSuccessResponse,
+  AuthIdentityResponse,
   AuthSessionResponse,
+  AuthTokens,
   AuthUser,
+  CreateOrganizationRequest,
+  CurrentTenantResponse,
   ForgotPasswordResponse,
   HealthCheckResult,
   MessageResponse,
+  RegisterRequest,
+  TenantListItem,
 } from '@local-service-marketplace/shared-types';
 import { env } from './env';
-import { getAccessToken } from '@/features/auth/session';
+import { getAccessToken, getActiveTenantId } from '@/features/auth/session';
 
 export class ApiClientError extends Error {
   readonly code: string;
@@ -32,7 +38,10 @@ export class ApiClientError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit & { auth?: boolean }): Promise<T> {
+async function request<T>(
+  path: string,
+  init?: RequestInit & { auth?: boolean; tenantHeader?: boolean },
+): Promise<T> {
   const url = `${env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
   const headers = new Headers(init?.headers);
   headers.set('Accept', 'application/json');
@@ -45,6 +54,13 @@ async function request<T>(path: string, init?: RequestInit & { auth?: boolean })
     const accessToken = getAccessToken();
     if (accessToken) {
       headers.set('Authorization', `Bearer ${accessToken}`);
+    }
+
+    if (init.tenantHeader !== false) {
+      const tenantId = getActiveTenantId();
+      if (tenantId) {
+        headers.set('X-Tenant-Id', tenantId);
+      }
     }
   }
 
@@ -81,7 +97,7 @@ export const apiClient = {
     return request<HealthCheckResult>('health');
   },
 
-  register(input: { email: string; password: string }): Promise<AuthSessionResponse> {
+  register(input: RegisterRequest): Promise<AuthSessionResponse> {
     return request<AuthSessionResponse>('auth/register', {
       method: 'POST',
       body: JSON.stringify(input),
@@ -110,8 +126,8 @@ export const apiClient = {
     });
   },
 
-  me(): Promise<AuthUser> {
-    return request<AuthUser>('auth/me', { auth: true });
+  me(): Promise<AuthIdentityResponse> {
+    return request<AuthIdentityResponse>('auth/me', { auth: true });
   },
 
   forgotPassword(email: string): Promise<ForgotPasswordResponse> {
@@ -127,4 +143,30 @@ export const apiClient = {
       body: JSON.stringify(input),
     });
   },
+
+  listTenants(): Promise<TenantListItem[]> {
+    return request<TenantListItem[]>('tenants', { auth: true });
+  },
+
+  getCurrentTenant(): Promise<CurrentTenantResponse> {
+    return request<CurrentTenantResponse>('tenants/current', { auth: true });
+  },
+
+  switchTenant(tenantId: string): Promise<AuthSessionResponse> {
+    return request<AuthSessionResponse>('tenants/switch', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify({ tenantId }),
+    });
+  },
+
+  createOrganization(input: CreateOrganizationRequest): Promise<AuthSessionResponse> {
+    return request<AuthSessionResponse>('organizations', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
 };
+
+export type { AuthTokens, AuthUser, CurrentTenantResponse, TenantListItem };

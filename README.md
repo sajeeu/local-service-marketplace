@@ -2,7 +2,7 @@
 
 Multi-tenant local service marketplace connecting customers and service providers. This repository is a **modular monolith** monorepo.
 
-> **Phase 1** delivers identity and access foundation (auth, JWT, RBAC, audit). Marketplace domain features come next.
+> **Phase 2** delivers tenant and organization management (multi-tenant ownership boundaries, memberships, tenant switching). Marketplace domain features come next.
 
 ## Architecture
 
@@ -83,7 +83,7 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Identity models (User, Role, Permission, tokens, AuditLog) live in Prisma. Seed creates system roles and base permissions.
+Identity and tenancy models (User, Role, Permission, Tenant, Organization, Membership, tokens, AuditLog) live in Prisma. Seed creates system roles and base permissions.
 
 ### 5. Run applications
 
@@ -100,6 +100,8 @@ pnpm dev:web   # http://localhost:3000
 - Swagger: `http://localhost:3001/api/docs`
 - Web: `http://localhost:3000`
 - Auth: `/login`, `/register`, `/account`
+- Organization: `/organization/create`
+- Tenancy API: `/api/v1/tenants`, `/api/v1/tenants/current`, `/api/v1/tenants/switch`, `/api/v1/organizations`
 
 ## Environment variables
 

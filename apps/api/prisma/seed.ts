@@ -12,6 +12,11 @@ const ROLES: Array<{ name: RoleName; description: string }> = [
 const PERMISSIONS: Array<{ code: string; description: string }> = [
   { code: 'user.read', description: 'Read own user identity' },
   { code: 'user.manage', description: 'Manage user accounts' },
+  { code: 'tenant.read', description: 'Read tenant information' },
+  { code: 'tenant.switch', description: 'Switch active tenant' },
+  { code: 'organization.read', description: 'Read organization information' },
+  { code: 'organization.manage', description: 'Manage organization details' },
+  { code: 'membership.read', description: 'Read tenant memberships' },
 ];
 
 async function main(): Promise<void> {
@@ -36,10 +41,25 @@ async function main(): Promise<void> {
   const permissionByCode = Object.fromEntries(permissions.map((p) => [p.code, p]));
 
   const rolePermissionMap: Record<RoleName, string[]> = {
-    [RoleName.CUSTOMER]: ['user.read'],
-    [RoleName.PROVIDER]: ['user.read'],
-    [RoleName.BUSINESS]: ['user.read'],
-    [RoleName.ADMIN]: ['user.read', 'user.manage'],
+    [RoleName.CUSTOMER]: ['user.read', 'tenant.read', 'tenant.switch', 'membership.read'],
+    [RoleName.PROVIDER]: ['user.read', 'tenant.read', 'tenant.switch', 'membership.read'],
+    [RoleName.BUSINESS]: [
+      'user.read',
+      'tenant.read',
+      'tenant.switch',
+      'organization.read',
+      'organization.manage',
+      'membership.read',
+    ],
+    [RoleName.ADMIN]: [
+      'user.read',
+      'user.manage',
+      'tenant.read',
+      'tenant.switch',
+      'organization.read',
+      'organization.manage',
+      'membership.read',
+    ],
   };
 
   for (const role of roles) {

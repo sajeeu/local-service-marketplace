@@ -7,9 +7,13 @@ import type { AuthUser } from '@local-service-marketplace/shared-types';
 import { Button } from '@/components/ui/button';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { clearSession, getRefreshToken } from '@/features/auth/session';
+import { OrganizationCard } from '@/features/tenancy/components/organization-card';
+import { TenantSelector } from '@/features/tenancy/components/tenant-selector';
+import { TenantProvider, useTenantContext } from '@/features/tenancy/tenant-provider';
 
-export default function AccountPage() {
+function AccountContent() {
   const router = useRouter();
+  const { current, tenants } = useTenantContext();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,9 +24,9 @@ export default function AccountPage() {
 
     async function load(): Promise<void> {
       try {
-        const me = await apiClient.me();
+        const identity = await apiClient.me();
         if (!cancelled) {
-          setUser(me);
+          setUser(identity.user);
         }
       } catch (err) {
         if (!cancelled) {
@@ -59,6 +63,10 @@ export default function AccountPage() {
     }
   }
 
+  const ownsBusiness = tenants.some(
+    (item) => item.tenant.type === 'BUSINESS' && item.membership.role === 'OWNER',
+  );
+
   return (
     <main className="relative min-h-screen overflow-hidden">
       <div
@@ -73,10 +81,10 @@ export default function AccountPage() {
           Your account
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Identity details for the signed-in user. Marketplace dashboards come in later phases.
+          Identity and workspace details for the signed-in user.
         </p>
 
-        <div className="mt-10 space-y-4 border-t border-border pt-8">
+        <div className="mt-10 space-y-6 border-t border-border pt-8">
           {loading ? <p className="text-sm text-muted-foreground">Loading your identity…</p> : null}
           {error ? (
             <p
@@ -110,17 +118,43 @@ export default function AccountPage() {
               </div>
             </dl>
           ) : null}
+
+          <TenantSelector />
+
+          {current?.organization ? (
+            <OrganizationCard
+              organization={current.organization}
+              tenantName={current.tenant.name}
+            />
+          ) : current ? (
+            <p className="text-sm text-muted-foreground">
+              Individual workspace — no organization attached.
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-10 flex flex-wrap gap-3">
           <Button onClick={() => void handleLogout()} disabled={loggingOut}>
             {loggingOut ? 'Signing out…' : 'Sign out'}
           </Button>
+          {!ownsBusiness ? (
+            <Button asChild variant="secondary">
+              <Link href="/organization/create">Create organization</Link>
+            </Button>
+          ) : null}
           <Button asChild variant="secondary">
             <Link href="/">Back home</Link>
           </Button>
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <TenantProvider>
+      <AccountContent />
+    </TenantProvider>
   );
 }

@@ -52,6 +52,55 @@ describe('RegisterForm', () => {
     expect(registerApi).not.toHaveBeenCalled();
   });
 
+  it('requires organization name for business accounts', async () => {
+    const user = userEvent.setup();
+    render(<RegisterForm />);
+
+    await user.selectOptions(screen.getByLabelText(/account type/i), 'BUSINESS');
+    await user.type(screen.getByLabelText(/^email$/i), 'biz@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'SecurePass1!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'SecurePass1!');
+    await user.click(screen.getByRole('button', { name: /^create account$/i }));
+
+    expect(await screen.findByText(/organization name is required/i)).toBeInTheDocument();
+    expect(registerApi).not.toHaveBeenCalled();
+  });
+
+  it('submits account type with registration', async () => {
+    const user = userEvent.setup();
+    registerApi.mockResolvedValue({
+      user: {
+        id: '1',
+        email: 'new@example.com',
+        roles: ['CUSTOMER'],
+        permissions: [],
+        status: 'ACTIVE',
+        emailVerifiedAt: null,
+        activeTenantId: 't1',
+        createdAt: new Date().toISOString(),
+      },
+      tokens: { accessToken: 'a', refreshToken: 'r', expiresIn: '15m' },
+      tenantContext: null,
+    });
+    persistSession.mockResolvedValue(undefined);
+
+    render(<RegisterForm />);
+
+    await user.type(screen.getByLabelText(/^email$/i), 'new@example.com');
+    await user.type(screen.getByLabelText(/^password$/i), 'SecurePass1!');
+    await user.type(screen.getByLabelText(/confirm password/i), 'SecurePass1!');
+    await user.click(screen.getByRole('button', { name: /^create account$/i }));
+
+    await waitFor(() => {
+      expect(registerApi).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'new@example.com',
+          accountType: 'CUSTOMER',
+        }),
+      );
+    });
+  });
+
   it('shows loading state while submitting', async () => {
     const user = userEvent.setup();
     let resolveRegister: (value: unknown) => void = () => undefined;
@@ -82,9 +131,11 @@ describe('RegisterForm', () => {
         permissions: [],
         status: 'ACTIVE',
         emailVerifiedAt: null,
+        activeTenantId: 't1',
         createdAt: new Date().toISOString(),
       },
       tokens: { accessToken: 'a', refreshToken: 'r', expiresIn: '15m' },
+      tenantContext: null,
     });
   });
 });

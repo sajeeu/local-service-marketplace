@@ -2,6 +2,9 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RoleName, UserStatus } from '@prisma/client';
 import type { AppConfig } from '../../../config/env.validation';
+import { TenantContextService } from '../../tenancy/services/tenant-context.service';
+import { TenancyProvisionService } from '../../tenancy/services/tenancy-provision.service';
+import { AccountTypeDto } from '../dto/auth.dto';
 import { AuthService } from './auth.service';
 import { AuditService } from './audit.service';
 import { PasswordService } from './password.service';
@@ -50,13 +53,45 @@ describe('AuthService', () => {
     get: jest.fn().mockReturnValue('development'),
   };
 
+  const tenancyProvisionService = {
+    provisionForRegistration: jest.fn(),
+  };
+
+  const tenantContextService = {
+    getCurrentForUser: jest.fn().mockResolvedValue(null),
+  };
+
   const service = new AuthService(
     prisma as never,
     passwordService as unknown as PasswordService,
     tokenService as unknown as TokenService,
     auditService as unknown as AuditService,
     configService as unknown as ConfigService<AppConfig, true>,
+    tenancyProvisionService as unknown as TenancyProvisionService,
+    tenantContextService as unknown as TenantContextService,
   );
+
+  const tenantContext = {
+    tenant: {
+      id: 'tenant-1',
+      name: "customer's workspace",
+      slug: 'customer-s-workspace',
+      type: 'INDIVIDUAL' as const,
+      status: 'ACTIVE' as const,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    },
+    organization: null,
+    membership: {
+      id: 'membership-1',
+      userId: 'user-1',
+      tenantId: 'tenant-1',
+      role: 'OWNER' as const,
+      status: 'ACTIVE' as const,
+      joinedAt: '2026-01-01T00:00:00.000Z',
+    },
+    permissions: ['tenant.read', 'tenant.switch', 'membership.read'],
+  };
 
   const userWithRoles = {
     id: 'user-1',
@@ -64,6 +99,7 @@ describe('AuthService', () => {
     passwordHash: 'hashed',
     status: UserStatus.ACTIVE,
     emailVerifiedAt: null,
+    activeTenantId: 'tenant-1',
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     roles: [
@@ -83,47 +119,58 @@ describe('AuthService', () => {
       refreshToken: 'refresh',
       expiresIn: '15m',
     });
+    tenantContextService.getCurrentForUser.mockResolvedValue(tenantContext);
   });
 
-  it('registers a user with the CUSTOMER role', async () => {
+  it('registers a customer with an individual tenant', async () => {
     prisma.user.findUnique.mockResolvedValue(null);
     prisma.role.findUnique.mockResolvedValue({ id: 'role-customer', name: RoleName.CUSTOMER });
     passwordService.hash.mockResolvedValue('hashed');
-    prisma.user.create.mockResolvedValue(userWithRoles);
+    prisma.$transaction.mockImplementation(async (callback: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        user: {
+          create: jest.fn().mockResolvedValue({ id: 'user-1', email: 'customer@example.com' }),
+          findUnique: jest.fn().mockResolvedValue(userWithRoles),
+        },
+      };
+      tenancyProvisionService.provisionForRegistration.mockResolvedValue(tenantContext);
+      return callback(tx);
+    });
 
-    const result = await service.register('Customer@Example.com', 'SecurePass1!');
-
-    expect(prisma.user.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          email: 'customer@example.com',
-          passwordHash: 'hashed',
-          status: UserStatus.ACTIVE,
-          roles: { create: { roleId: 'role-customer' } },
-        }),
-      }),
+    const result = await service.register(
+      'Customer@Example.com',
+      'SecurePass1!',
+      AccountTypeDto.CUSTOMER,
+      undefined,
     );
+
+    expect(tenancyProvisionService.provisionForRegistration).toHaveBeenCalled();
     expect(result.user.roles).toEqual(['CUSTOMER']);
+    expect(result.tenantContext?.tenant.id).toBe('tenant-1');
     expect(result.tokens.accessToken).toBe('access');
     expect(auditService.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'USER_REGISTERED' }),
+    );
+    expect(auditService.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'TENANT_CREATED' }),
     );
   });
 
   it('rejects duplicate registration emails', async () => {
     prisma.user.findUnique.mockResolvedValue(userWithRoles);
-    await expect(service.register('customer@example.com', 'SecurePass1!')).rejects.toBeInstanceOf(
-      ConflictException,
-    );
+    await expect(
+      service.register('customer@example.com', 'SecurePass1!', AccountTypeDto.CUSTOMER, undefined),
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('logs in with valid credentials', async () => {
+  it('logs in with valid credentials and tenant context', async () => {
     prisma.user.findUnique.mockResolvedValue(userWithRoles);
     passwordService.verify.mockResolvedValue(true);
 
     const result = await service.login('customer@example.com', 'SecurePass1!');
 
     expect(result.user.email).toBe('customer@example.com');
+    expect(result.tenantContext?.tenant.id).toBe('tenant-1');
     expect(auditService.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'USER_LOGIN' }),
     );

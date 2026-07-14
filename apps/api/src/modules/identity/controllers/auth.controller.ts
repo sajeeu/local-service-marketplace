@@ -8,8 +8,8 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type {
+  AuthIdentityResponse,
   AuthSessionResponse,
-  AuthUser,
   ForgotPasswordResponse,
   MessageResponse,
 } from '@local-service-marketplace/shared-types';
@@ -46,10 +46,16 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  @ApiOperation({ summary: 'Register a new user account' })
-  @ApiOkResponse({ description: 'User registered and session issued' })
+  @ApiOperation({ summary: 'Register a customer, provider, or business account' })
+  @ApiOkResponse({ description: 'User registered with tenant context and session issued' })
   register(@Body() dto: RegisterDto, @Req() req: Request): Promise<AuthSessionResponse> {
-    return this.authService.register(dto.email, dto.password, getRequestMeta(req));
+    return this.authService.register(
+      dto.email,
+      dto.password,
+      dto.accountType,
+      dto.organizationName,
+      getRequestMeta(req),
+    );
   }
 
   @Public()
@@ -85,8 +91,8 @@ export class AuthController {
 
   @Get('me')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get the authenticated user identity' })
-  me(@CurrentUser() user: AuthenticatedUser): Promise<AuthUser> {
+  @ApiOperation({ summary: 'Get the authenticated user identity and active tenant context' })
+  me(@CurrentUser() user: AuthenticatedUser): Promise<AuthIdentityResponse> {
     return this.authService.me(user.id);
   }
 

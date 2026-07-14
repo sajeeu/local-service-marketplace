@@ -10,8 +10,9 @@ export function middleware(request: NextRequest): NextResponse {
     (page) => pathname === page || pathname.startsWith(`${page}/`),
   );
   const isAccountRoute = pathname === '/account' || pathname.startsWith('/account/');
+  const isOrganizationRoute = pathname === '/organization' || pathname.startsWith('/organization/');
 
-  if (isAccountRoute && !isAuthenticated) {
+  if ((isAccountRoute || isOrganizationRoute) && !isAuthenticated) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
@@ -25,5 +26,12 @@ export function middleware(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  matcher: ['/account/:path*', '/login', '/register', '/forgot-password', '/reset-password'],
+  matcher: [
+    '/account/:path*',
+    '/organization/:path*',
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+  ],
 };

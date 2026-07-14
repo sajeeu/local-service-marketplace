@@ -50,9 +50,10 @@ export class TokenService {
   }
 
   async issueTokenPair(
-    user: Pick<User, 'id' | 'email'>,
+    user: Pick<User, 'id' | 'email' | 'activeTenantId'>,
     roles: RoleName[],
     meta: RequestContextMeta = {},
+    activeTenantId?: string | null,
   ): Promise<AuthTokens> {
     const accessExpiresIn = this.configService.get('JWT_ACCESS_EXPIRES_IN', {
       infer: true,
@@ -63,10 +64,13 @@ export class TokenService {
     const accessSecret = this.configService.get('JWT_ACCESS_SECRET', { infer: true });
     const refreshSecret = this.configService.get('JWT_REFRESH_SECRET', { infer: true });
 
+    const tid = activeTenantId ?? user.activeTenantId ?? undefined;
+
     const payload: JwtAccessPayload = {
       sub: user.id,
       email: user.email,
       roles,
+      ...(tid ? { tid } : {}),
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -144,7 +148,12 @@ export class TokenService {
     }
 
     const roles = existing.user.roles.map((entry) => entry.role.name);
-    const tokens = await this.issueTokenPair(existing.user, roles, meta);
+    const tokens = await this.issueTokenPair(
+      existing.user,
+      roles,
+      meta,
+      existing.user.activeTenantId,
+    );
 
     const newToken = await this.prisma.refreshToken.findFirst({
       where: {
