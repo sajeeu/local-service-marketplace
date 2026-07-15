@@ -21,6 +21,79 @@ const PERMISSIONS: Array<{ code: string; description: string }> = [
   { code: 'provider.manage', description: 'Manage provider profiles' },
   { code: 'provider.verification.submit', description: 'Submit provider verification' },
   { code: 'provider.verification.review', description: 'Review provider verification' },
+  { code: 'service.read', description: 'Read service catalog listings' },
+  { code: 'service.manage', description: 'Manage service catalog listings' },
+  { code: 'category.read', description: 'Read service categories' },
+  { code: 'category.manage', description: 'Manage service categories' },
+];
+
+const CATEGORIES: Array<{
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  sortOrder: number;
+  children?: Array<{
+    name: string;
+    slug: string;
+    description: string;
+    icon: string;
+    sortOrder: number;
+  }>;
+}> = [
+  {
+    name: 'Home Services',
+    slug: 'home-services',
+    description: 'Repairs, maintenance, and household help',
+    icon: 'home',
+    sortOrder: 1,
+    children: [
+      {
+        name: 'Plumbing',
+        slug: 'plumbing',
+        description: 'Pipes, fixtures, and water systems',
+        icon: 'wrench',
+        sortOrder: 1,
+      },
+      {
+        name: 'Electrical',
+        slug: 'electrical',
+        description: 'Wiring, outlets, and electrical repairs',
+        icon: 'zap',
+        sortOrder: 2,
+      },
+      {
+        name: 'Cleaning',
+        slug: 'cleaning',
+        description: 'Residential and commercial cleaning',
+        icon: 'sparkles',
+        sortOrder: 3,
+      },
+    ],
+  },
+  {
+    name: 'Outdoor',
+    slug: 'outdoor',
+    description: 'Lawn, garden, and exterior services',
+    icon: 'tree',
+    sortOrder: 2,
+    children: [
+      {
+        name: 'Landscaping',
+        slug: 'landscaping',
+        description: 'Lawn care and garden design',
+        icon: 'leaf',
+        sortOrder: 1,
+      },
+      {
+        name: 'Pest Control',
+        slug: 'pest-control',
+        description: 'Inspection and treatment services',
+        icon: 'bug',
+        sortOrder: 2,
+      },
+    ],
+  },
 ];
 
 async function main(): Promise<void> {
@@ -45,7 +118,14 @@ async function main(): Promise<void> {
   const permissionByCode = Object.fromEntries(permissions.map((p) => [p.code, p]));
 
   const rolePermissionMap: Record<RoleName, string[]> = {
-    [RoleName.CUSTOMER]: ['user.read', 'tenant.read', 'tenant.switch', 'membership.read'],
+    [RoleName.CUSTOMER]: [
+      'user.read',
+      'tenant.read',
+      'tenant.switch',
+      'membership.read',
+      'category.read',
+      'service.read',
+    ],
     [RoleName.PROVIDER]: [
       'user.read',
       'tenant.read',
@@ -54,6 +134,9 @@ async function main(): Promise<void> {
       'provider.read',
       'provider.manage',
       'provider.verification.submit',
+      'category.read',
+      'service.read',
+      'service.manage',
     ],
     [RoleName.BUSINESS]: [
       'user.read',
@@ -65,6 +148,9 @@ async function main(): Promise<void> {
       'provider.read',
       'provider.manage',
       'provider.verification.submit',
+      'category.read',
+      'service.read',
+      'service.manage',
     ],
     [RoleName.ADMIN]: [
       'user.read',
@@ -78,6 +164,10 @@ async function main(): Promise<void> {
       'provider.manage',
       'provider.verification.submit',
       'provider.verification.review',
+      'category.read',
+      'category.manage',
+      'service.read',
+      'service.manage',
     ],
   };
 
@@ -100,6 +190,48 @@ async function main(): Promise<void> {
         create: {
           roleId: role.id,
           permissionId: permission.id,
+        },
+      });
+    }
+  }
+
+  for (const category of CATEGORIES) {
+    const parent = await prisma.category.upsert({
+      where: { slug: category.slug },
+      update: {
+        name: category.name,
+        description: category.description,
+        icon: category.icon,
+        sortOrder: category.sortOrder,
+        isActive: true,
+      },
+      create: {
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        icon: category.icon,
+        sortOrder: category.sortOrder,
+      },
+    });
+
+    for (const child of category.children ?? []) {
+      await prisma.category.upsert({
+        where: { slug: child.slug },
+        update: {
+          name: child.name,
+          description: child.description,
+          icon: child.icon,
+          sortOrder: child.sortOrder,
+          parentId: parent.id,
+          isActive: true,
+        },
+        create: {
+          name: child.name,
+          slug: child.slug,
+          description: child.description,
+          icon: child.icon,
+          sortOrder: child.sortOrder,
+          parentId: parent.id,
         },
       });
     }

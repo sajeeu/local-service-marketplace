@@ -6,8 +6,11 @@ import type {
   AuthSessionResponse,
   AuthTokens,
   AuthUser,
+  CategoryDto,
+  CategoryTreeNodeDto,
   CreateOrganizationRequest,
   CreateProviderAvailabilityRequest,
+  CreateServiceRequest,
   CurrentTenantResponse,
   ForgotPasswordResponse,
   HealthCheckResult,
@@ -18,10 +21,13 @@ import type {
   ProviderPublicProfileDto,
   RegisterRequest,
   ReviewProviderVerificationRequest,
+  ServiceDto,
+  ServiceListResponse,
   SubmitProviderVerificationRequest,
   TenantListItem,
   UpdateProviderAvailabilityRequest,
   UpdateProviderProfileRequest,
+  UpdateServiceRequest,
 } from '@local-service-marketplace/shared-types';
 import { env } from './env';
 import { getAccessToken, getActiveTenantId } from '@/features/auth/session';
@@ -73,10 +79,25 @@ async function request<T>(
     }
   }
 
-  const response = await fetch(url, {
-    ...init,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers,
+    });
+  } catch (error) {
+    throw new ApiClientError(
+      'Unable to reach the API. Confirm the backend is running on the configured URL.',
+      {
+        code: 'CONNECTION_REFUSED',
+        status: 0,
+        details: {
+          url,
+          cause: error instanceof Error ? error.message : String(error),
+        },
+      },
+    );
+  }
 
   let body: ApiResponse<T> | null = null;
 
@@ -258,6 +279,68 @@ export const apiClient = {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify(input),
+    });
+  },
+
+  getCategoryTree(): Promise<CategoryTreeNodeDto[]> {
+    return request<CategoryTreeNodeDto[]>('categories/tree');
+  },
+
+  listCategories(): Promise<CategoryDto[]> {
+    return request<CategoryDto[]>('categories');
+  },
+
+  listMyServices(page = 1, limit = 20): Promise<ServiceListResponse> {
+    return request<ServiceListResponse>(`services/me?page=${page}&limit=${limit}`, {
+      auth: true,
+    });
+  },
+
+  getService(id: string): Promise<ServiceDto> {
+    return request<ServiceDto>(`services/${id}`, { auth: true });
+  },
+
+  createService(input: CreateServiceRequest): Promise<ServiceDto> {
+    return request<ServiceDto>('services', {
+      method: 'POST',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  updateService(id: string, input: UpdateServiceRequest): Promise<ServiceDto> {
+    return request<ServiceDto>(`services/${id}`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify(input),
+    });
+  },
+
+  deleteService(id: string): Promise<MessageResponse> {
+    return request<MessageResponse>(`services/${id}`, {
+      method: 'DELETE',
+      auth: true,
+    });
+  },
+
+  publishService(id: string): Promise<ServiceDto> {
+    return request<ServiceDto>(`services/${id}/publish`, {
+      method: 'PATCH',
+      auth: true,
+    });
+  },
+
+  pauseService(id: string): Promise<ServiceDto> {
+    return request<ServiceDto>(`services/${id}/pause`, {
+      method: 'PATCH',
+      auth: true,
+    });
+  },
+
+  archiveService(id: string): Promise<ServiceDto> {
+    return request<ServiceDto>(`services/${id}/archive`, {
+      method: 'PATCH',
+      auth: true,
     });
   },
 };

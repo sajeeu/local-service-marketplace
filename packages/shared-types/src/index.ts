@@ -336,3 +336,278 @@ export interface ReviewProviderVerificationRequest {
   action: ProviderVerificationReviewAction;
   rejectionReason?: string;
 }
+
+export type ServiceStatus = 'DRAFT' | 'PUBLISHED' | 'PAUSED' | 'ARCHIVED';
+
+export type PricingModel = 'FIXED' | 'HOURLY' | 'DAILY' | 'QUOTE_REQUIRED';
+
+export type ServiceMediaType = 'IMAGE' | 'VIDEO';
+
+export type ServiceLocationType = 'REMOTE' | 'ON_SITE' | 'CUSTOMER_LOCATION' | 'PROVIDER_LOCATION';
+
+export interface CategoryDto {
+  id: string;
+  parentId: string | null;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryTreeNodeDto extends CategoryDto {
+  children: CategoryTreeNodeDto[];
+}
+
+export interface ServiceMediaDto {
+  id: string;
+  type: ServiceMediaType;
+  url: string;
+  altText: string | null;
+  sortOrder: number;
+}
+
+export interface ServiceTagDto {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface ServiceLocationDto {
+  id: string;
+  type: ServiceLocationType;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  serviceRadius: number | null;
+}
+
+export interface ServiceFaqDto {
+  id: string;
+  question: string;
+  answer: string;
+  sortOrder: number;
+}
+
+export interface ServiceRequirementDto {
+  id: string;
+  description: string;
+  isRequired: boolean;
+  sortOrder: number;
+}
+
+export interface ServiceDto {
+  id: string;
+  providerId: string;
+  categoryId: string;
+  title: string;
+  slug: string;
+  shortDescription: string | null;
+  description: string | null;
+  status: ServiceStatus;
+  pricingModel: PricingModel;
+  basePrice: number | null;
+  currency: string;
+  duration: number | null;
+  cancellationPolicy: string | null;
+  instantBookingEnabled: boolean;
+  featured: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  category?: CategoryDto;
+  media: ServiceMediaDto[];
+  tags: ServiceTagDto[];
+  locations: ServiceLocationDto[];
+  faqs: ServiceFaqDto[];
+  requirements: ServiceRequirementDto[];
+}
+
+export interface ServiceListItemDto {
+  id: string;
+  providerId: string;
+  categoryId: string;
+  title: string;
+  slug: string;
+  shortDescription: string | null;
+  status: ServiceStatus;
+  pricingModel: PricingModel;
+  basePrice: number | null;
+  currency: string;
+  duration: number | null;
+  featured: boolean;
+  updatedAt: string;
+  categoryName?: string | null;
+}
+
+export interface ServiceListResponse {
+  items: ServiceListItemDto[];
+  meta: PaginationMeta;
+}
+
+export interface CreateServiceRequest {
+  categoryId: string;
+  title: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  pricingModel: PricingModel;
+  basePrice?: number | null;
+  currency?: string;
+  duration?: number | null;
+  cancellationPolicy?: string | null;
+  instantBookingEnabled?: boolean;
+  featured?: boolean;
+  tags?: string[];
+  locations?: Array<{
+    type: ServiceLocationType;
+    city?: string | null;
+    state?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    serviceRadius?: number | null;
+  }>;
+  faqs?: Array<{
+    question: string;
+    answer: string;
+    sortOrder?: number;
+  }>;
+  requirements?: Array<{
+    description: string;
+    isRequired?: boolean;
+    sortOrder?: number;
+  }>;
+  media?: Array<{
+    type: ServiceMediaType;
+    url: string;
+    altText?: string | null;
+    sortOrder?: number;
+  }>;
+}
+
+export interface UpdateServiceRequest {
+  categoryId?: string;
+  title?: string;
+  shortDescription?: string | null;
+  description?: string | null;
+  pricingModel?: PricingModel;
+  basePrice?: number | null;
+  currency?: string;
+  duration?: number | null;
+  cancellationPolicy?: string | null;
+  instantBookingEnabled?: boolean;
+  featured?: boolean;
+  tags?: string[];
+  locations?: Array<{
+    type: ServiceLocationType;
+    city?: string | null;
+    state?: string | null;
+    country?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    serviceRadius?: number | null;
+  }>;
+  faqs?: Array<{
+    question: string;
+    answer: string;
+    sortOrder?: number;
+  }>;
+  requirements?: Array<{
+    description: string;
+    isRequired?: boolean;
+    sortOrder?: number;
+  }>;
+  media?: Array<{
+    type: ServiceMediaType;
+    url: string;
+    altText?: string | null;
+    sortOrder?: number;
+  }>;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  slug?: string;
+  description?: string | null;
+  icon?: string | null;
+  parentId?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateCategoryRequest {
+  name?: string;
+  slug?: string;
+  description?: string | null;
+  icon?: string | null;
+  parentId?: string | null;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+
+export interface CreateServiceMediaRequest {
+  type: ServiceMediaType;
+  url: string;
+  altText?: string | null;
+  sortOrder?: number;
+}
+
+export interface UpdateServiceMediaRequest {
+  type?: ServiceMediaType;
+  url?: string;
+  altText?: string | null;
+  sortOrder?: number;
+}
+
+export interface CreateServiceTagRequest {
+  name: string;
+}
+
+export interface CreateServiceFaqRequest {
+  question: string;
+  answer: string;
+  sortOrder?: number;
+}
+
+export interface UpdateServiceFaqRequest {
+  question?: string;
+  answer?: string;
+  sortOrder?: number;
+}
+
+export interface CreateServiceRequirementRequest {
+  description: string;
+  isRequired?: boolean;
+  sortOrder?: number;
+}
+
+export interface UpdateServiceRequirementRequest {
+  description?: string;
+  isRequired?: boolean;
+  sortOrder?: number;
+}
+
+export interface CreateServiceLocationRequest {
+  type: ServiceLocationType;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  serviceRadius?: number | null;
+}
+
+export interface UpdateServiceLocationRequest {
+  type?: ServiceLocationType;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  serviceRadius?: number | null;
+}

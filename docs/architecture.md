@@ -1,4 +1,4 @@
-# Architecture — Phase 1 + Phase 2 + Phase 3
+# Architecture — Phase 1 + Phase 2 + Phase 3 + Phase 4
 
 ## Modular monolith
 
@@ -23,7 +23,7 @@ Shared packages contain **contracts and tooling only** — never business logic.
 - Auth route group `(auth)`: `/login`, `/register`, `/forgot-password`, `/reset-password`
 - Protected `/account` page (identity + tenant selector)
 - Protected `/organization/create` for business organization upgrade
-- Provider workspace `(provider)`: `/provider/onboarding`, `/provider/profile`, `/provider/profile/edit`, `/provider/availability`
+- Provider workspace `(provider)`: `/provider/onboarding`, `/provider/profile`, `/provider/profile/edit`, `/provider/availability`, `/provider/services`
 - Tenant provider / selector / organization form foundation
 - Middleware session cookie gate for `/account`, `/organization/*`, `/provider/*`, and auth pages
 
@@ -37,25 +37,28 @@ Shared packages contain **contracts and tooling only** — never business logic.
 - Health endpoint: `GET /api/v1/health`
 - **Identity module**: register (account types), login, refresh, logout, me, forgot/reset password
 - **Tenancy module**: tenants list/current/switch, organization create, TenantGuard
-- **Providers module**: profiles, availability, verification submit/review, public profiles, storage port stub
+- **Providers module**: profiles, availability, verification submit/review, public profiles
+- **Services module**: categories, service CRUD, draft/publish workflow, media/tags/locations/FAQs/requirements
 - Global JWT + Roles + Permissions + Throttler guards
+- Shared **StorageModule** (`STORAGE_PORT`) for future Cloudinary / S3 adapters
 
 ## Packages
 
-| Package         | Role                                               |
-| --------------- | -------------------------------------------------- |
-| `shared-types`  | API response + auth + tenancy + provider contracts |
-| `config`        | Base TypeScript configs                            |
-| `eslint-config` | Shared ESLint flat configs                         |
+| Package         | Role                                                         |
+| --------------- | ------------------------------------------------------------ |
+| `shared-types`  | API response + auth + tenancy + provider + service contracts |
+| `config`        | Base TypeScript configs                                      |
+| `eslint-config` | Shared ESLint flat configs                                   |
 
 ## Data foundations
 
-- **PostgreSQL** via Prisma — identity, tenancy, and provider models:
+- **PostgreSQL** via Prisma — identity, tenancy, provider, and service catalog models:
   - Identity: User, Role, Permission, UserRole, RolePermission, RefreshToken, PasswordResetToken, AuditLog
   - Tenancy: Tenant, Organization, Membership (`User.activeTenantId`)
   - Providers: Provider, ProviderQualification, ProviderCertification, ProviderLanguage, ProviderAvailability, ProviderVerification
+  - Services: Category, Service, ServiceMedia, ServiceTag, ServiceLocation, ServiceFaq, ServiceRequirement
 - **Redis** via `ioredis` — connectivity ready for future rate-limit/cache usage
-- Seed creates roles (`CUSTOMER`, `PROVIDER`, `BUSINESS`, `ADMIN`) and permissions including tenant/organization/provider codes
+- Seed creates roles, permissions (including `service.*` / `category.*`), and a starter category tree
 
 ### Provider domain notes
 
@@ -67,6 +70,17 @@ Shared packages contain **contracts and tooling only** — never business logic.
 - Metrics (`averageRating`, `completedJobs`, etc.) are stored for future booking/review phases
 - Media fields store URLs; `StoragePort` abstracts future S3/Cloudinary uploads
 
+### Service catalog notes
+
+- Each **Service** belongs to exactly one **Provider**
+- Status workflow: `DRAFT` → `PUBLISHED` → `PAUSED` / `ARCHIVED`
+- Only **VERIFIED** providers may publish; unverified providers may save drafts
+- Pricing models: `FIXED`, `HOURLY`, `DAILY`, `QUOTE_REQUIRED`
+- Categories support unlimited nesting via `parentId`
+- Slugs are SEO-friendly and unique per provider; regenerated on title change only while draft/paused
+- Nested resources: media, tags, locations, FAQs, customer requirements
+- Search / Meilisearch indexing is intentionally deferred
+
 ## Identity & access
 
 - Access JWT (short-lived, includes optional `tid` active tenant claim) + refresh JWT (hashed at rest, rotated on refresh)
@@ -75,8 +89,9 @@ Shared packages contain **contracts and tooling only** — never business logic.
   - Business → business tenant + organization + OWNER membership
 - Active tenant resolved server-side: `X-Tenant-Id` header → JWT `tid` → `User.activeTenantId` (membership always validated)
 - Provider permissions: `provider.read`, `provider.manage`, `provider.verification.submit`, `provider.verification.review` (admin)
+- Service permissions: `service.read`, `service.manage`, `category.read`, `category.manage` (admin)
 - Password reset without email: non-production responses may include `resetToken`
-- Audit log records auth, tenant, organization, membership, and provider events
+- Audit log records auth, tenant, organization, membership, provider, and service events
 
 ## Tenancy API
 
@@ -103,9 +118,41 @@ Shared packages contain **contracts and tooling only** — never business logic.
 | `POST`   | `/api/v1/providers/me/verification`        | Submit verification document metadata           |
 | `PATCH`  | `/api/v1/admin/providers/:id/verification` | Admin approve / reject / suspend                |
 
+## Service Catalog API
+
+| Method   | Path                                    | Purpose                                       |
+| -------- | --------------------------------------- | --------------------------------------------- |
+| `GET`    | `/api/v1/categories`                    | List active categories (public)               |
+| `GET`    | `/api/v1/categories/tree`               | Active category tree (public)                 |
+| `POST`   | `/api/v1/admin/categories`              | Create category (admin)                       |
+| `PATCH`  | `/api/v1/admin/categories/:id`          | Update category (admin)                       |
+| `DELETE` | `/api/v1/admin/categories/:id`          | Delete empty category (admin)                 |
+| `POST`   | `/api/v1/services`                      | Create draft service                          |
+| `GET`    | `/api/v1/services/me`                   | List managed services                         |
+| `GET`    | `/api/v1/services/:id`                  | Get managed service                           |
+| `PATCH`  | `/api/v1/services/:id`                  | Update service                                |
+| `DELETE` | `/api/v1/services/:id`                  | Delete non-published service                  |
+| `PATCH`  | `/api/v1/services/:id/publish`          | Publish (verified provider + required fields) |
+| `PATCH`  | `/api/v1/services/:id/pause`            | Pause published service                       |
+| `PATCH`  | `/api/v1/services/:id/archive`          | Archive service                               |
+| `POST`   | `/api/v1/services/:id/media`            | Add media                                     |
+| `PATCH`  | `/api/v1/services/:id/media/:mediaId`   | Update media                                  |
+| `DELETE` | `/api/v1/services/:id/media/:mediaId`   | Delete media                                  |
+| `POST`   | `/api/v1/services/:id/tags`             | Add tag                                       |
+| `DELETE` | `/api/v1/services/:id/tags/:tagId`      | Delete tag                                    |
+| `POST`   | `/api/v1/services/:id/faqs`             | Add FAQ                                       |
+| `PATCH`  | `/api/v1/services/:id/faqs/:faqId`      | Update FAQ                                    |
+| `DELETE` | `/api/v1/services/:id/faqs/:faqId`      | Delete FAQ                                    |
+| `POST`   | `/api/v1/services/:id/requirements`     | Add requirement                               |
+| `PATCH`  | `/api/v1/services/:id/requirements/:id` | Update requirement                            |
+| `DELETE` | `/api/v1/services/:id/requirements/:id` | Delete requirement                            |
+| `POST`   | `/api/v1/services/:id/locations`        | Add location                                  |
+| `PATCH`  | `/api/v1/services/:id/locations/:id`    | Update location                               |
+| `DELETE` | `/api/v1/services/:id/locations/:id`    | Delete location                               |
+
 ## Future domains (not implemented)
 
-Staff invitations, Services, Bookings, Payments, Reviews, Notifications, Search, Admin dashboards, calendar sync, cloud file uploads.
+Staff invitations, Bookings, Payments, Reviews, Notifications, Search, Admin dashboards, calendar sync, cloud file uploads.
 
 ## Local development topology
 

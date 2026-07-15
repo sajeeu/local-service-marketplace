@@ -13,6 +13,7 @@ const NAV = [
   { href: '/provider/profile', label: 'Profile' },
   { href: '/provider/profile/edit', label: 'Edit' },
   { href: '/provider/availability', label: 'Availability' },
+  { href: '/provider/services', label: 'Services' },
   { href: '/provider/onboarding', label: 'Onboarding' },
 ] as const;
 
@@ -77,7 +78,9 @@ function ProviderShell({ children }: { children: ReactNode }): React.JSX.Element
           className="mb-10 flex flex-wrap gap-4 border-b border-border pb-4"
         >
           {NAV.map((item) => {
-            const active = pathname === item.href;
+            const active =
+              pathname === item.href ||
+              (item.href !== '/provider/profile' && pathname.startsWith(`${item.href}/`));
             return (
               <Link
                 key={item.href}

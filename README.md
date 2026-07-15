@@ -2,7 +2,7 @@
 
 Multi-tenant local service marketplace connecting customers and service providers. This repository is a **modular monolith** monorepo.
 
-> **Phase 3** delivers provider profiles and verification foundation (professional info, availability, public profiles). Service catalog, bookings, and payments come next.
+> **Phase 4** delivers the Service Catalog (categories, listings, pricing, media, locations, FAQs, requirements, draft/publish workflow). Bookings and payments come next.
 
 ## Architecture
 
@@ -83,7 +83,7 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Identity and tenancy models (User, Role, Permission, Tenant, Organization, Membership, tokens, AuditLog) live in Prisma. Seed creates system roles and base permissions.
+Identity and tenancy models (User, Role, Permission, Tenant, Organization, Membership, tokens, AuditLog) live in Prisma. Seed creates system roles, base permissions, and a starter service category tree.
 
 ### 5. Run applications
 
@@ -101,7 +101,9 @@ pnpm dev:web   # http://localhost:3000
 - Web: `http://localhost:3000`
 - Auth: `/login`, `/register`, `/account`
 - Organization: `/organization/create`
+- Provider services: `/provider/services`
 - Tenancy API: `/api/v1/tenants`, `/api/v1/tenants/current`, `/api/v1/tenants/switch`, `/api/v1/organizations`
+- Service Catalog API: `/api/v1/categories`, `/api/v1/services`
 
 ## Environment variables
 

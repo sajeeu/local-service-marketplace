@@ -24,7 +24,7 @@ import {
   ProviderQualificationInputDto,
   UpdateProviderProfileDto,
 } from '../dto/provider.dto';
-import { STORAGE_PORT, type StoragePort } from '../interfaces/storage-port';
+import { STORAGE_PORT, type StoragePort } from '../../../infrastructure/storage/storage.port';
 import {
   toListItemDto,
   toPrivateProfileDto,

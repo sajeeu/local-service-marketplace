@@ -6,8 +6,6 @@ import { ProviderAvailabilityController } from './controllers/provider-availabil
 import { ProviderVerificationController } from './controllers/provider-verification.controller';
 import { ProvidersController } from './controllers/providers.controller';
 import { PublicProvidersController } from './controllers/public-providers.controller';
-import { STORAGE_PORT } from './interfaces/storage-port';
-import { PassThroughStorageService } from './services/pass-through-storage.service';
 import { ProviderAvailabilityService } from './services/provider-availability.service';
 import { ProviderVerificationService } from './services/provider-verification.service';
 import { ProviderService } from './services/provider.service';
@@ -21,16 +19,7 @@ import { ProviderService } from './services/provider.service';
     PublicProvidersController,
     AdminProvidersController,
   ],
-  providers: [
-    ProviderService,
-    ProviderAvailabilityService,
-    ProviderVerificationService,
-    PassThroughStorageService,
-    {
-      provide: STORAGE_PORT,
-      useExisting: PassThroughStorageService,
-    },
-  ],
+  providers: [ProviderService, ProviderAvailabilityService, ProviderVerificationService],
   exports: [ProviderService, ProviderAvailabilityService, ProviderVerificationService],
 })
 export class ProvidersModule {}

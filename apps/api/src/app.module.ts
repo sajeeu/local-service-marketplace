@@ -4,8 +4,10 @@ import { validateEnv } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { RedisModule } from './infrastructure/redis/redis.module';
+import { StorageModule } from './infrastructure/storage/storage.module';
 import { IdentityModule } from './modules/identity/identity.module';
 import { ProvidersModule } from './modules/providers/providers.module';
+import { ServicesModule } from './modules/services/services.module';
 import { TenancyModule } from './modules/tenancy/tenancy.module';
 
 @Module({
@@ -17,10 +19,12 @@ import { TenancyModule } from './modules/tenancy/tenancy.module';
     }),
     DatabaseModule,
     RedisModule,
+    StorageModule,
     HealthModule,
     IdentityModule,
     TenancyModule,
     ProvidersModule,
+    ServicesModule,
   ],
 })
 export class AppModule {}
