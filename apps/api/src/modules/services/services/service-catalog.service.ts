@@ -6,6 +6,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type {
   MessageResponse,
   ServiceDto,
@@ -31,6 +32,7 @@ import type {
   RequestContextMeta,
 } from '../../identity/interfaces/auth.interfaces';
 import { AuditService } from '../../identity/services/audit.service';
+import { SEARCH_EVENTS } from '../../search/constants';
 import {
   CreateServiceDto,
   CreateServiceFaqDto,
@@ -68,8 +70,17 @@ export class ServiceCatalogService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
     private readonly categoryService: CategoryService,
+    private readonly eventEmitter: EventEmitter2,
     @Inject(STORAGE_PORT) private readonly storage: StoragePort,
   ) {}
+
+  private emitServiceUpsert(serviceId: string): void {
+    this.eventEmitter.emit(SEARCH_EVENTS.SERVICE_UPSERT, { serviceId });
+  }
+
+  private emitServiceRemove(serviceId: string): void {
+    this.eventEmitter.emit(SEARCH_EVENTS.SERVICE_REMOVE, { serviceId });
+  }
 
   async create(
     user: AuthenticatedUser,
@@ -239,6 +250,7 @@ export class ServiceCatalogService {
       ...meta,
     });
 
+    this.emitServiceUpsert(serviceId);
     return toServiceDto(updated);
   }
 
@@ -266,6 +278,7 @@ export class ServiceCatalogService {
       ...meta,
     });
 
+    this.emitServiceRemove(serviceId);
     return { message: 'Service deleted' };
   }
 
@@ -309,6 +322,7 @@ export class ServiceCatalogService {
       ...meta,
     });
 
+    this.emitServiceUpsert(serviceId);
     return toServiceDto(updated);
   }
 
@@ -340,6 +354,7 @@ export class ServiceCatalogService {
       ...meta,
     });
 
+    this.emitServiceRemove(serviceId);
     return toServiceDto(updated);
   }
 
@@ -367,6 +382,7 @@ export class ServiceCatalogService {
       ...meta,
     });
 
+    this.emitServiceRemove(serviceId);
     return toServiceDto(updated);
   }
 
@@ -390,6 +406,7 @@ export class ServiceCatalogService {
         sortOrder: dto.sortOrder ?? count,
       },
     });
+    this.emitServiceUpsert(serviceId);
     return toMediaDto(created);
   }
 
@@ -416,6 +433,7 @@ export class ServiceCatalogService {
         ...(dto.sortOrder !== undefined ? { sortOrder: dto.sortOrder } : {}),
       },
     });
+    this.emitServiceUpsert(serviceId);
     return toMediaDto(updated);
   }
 
@@ -432,6 +450,7 @@ export class ServiceCatalogService {
       throw new NotFoundException('Media not found');
     }
     await this.prisma.serviceMedia.delete({ where: { id: mediaId } });
+    this.emitServiceUpsert(serviceId);
     return { message: 'Media deleted' };
   }
 
@@ -452,6 +471,7 @@ export class ServiceCatalogService {
       const created = await this.prisma.serviceTag.create({
         data: { serviceId, name, slug },
       });
+      this.emitServiceUpsert(serviceId);
       return toTagDto(created);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -472,6 +492,7 @@ export class ServiceCatalogService {
       throw new NotFoundException('Tag not found');
     }
     await this.prisma.serviceTag.delete({ where: { id: tagId } });
+    this.emitServiceUpsert(serviceId);
     return { message: 'Tag deleted' };
   }
 
@@ -616,6 +637,7 @@ export class ServiceCatalogService {
         serviceRadius: dto.serviceRadius ?? null,
       },
     });
+    this.emitServiceUpsert(serviceId);
     return toLocationDto(created);
   }
 
@@ -654,6 +676,7 @@ export class ServiceCatalogService {
         ...(dto.serviceRadius !== undefined ? { serviceRadius: dto.serviceRadius } : {}),
       },
     });
+    this.emitServiceUpsert(serviceId);
     return toLocationDto(updated);
   }
 
@@ -670,6 +693,7 @@ export class ServiceCatalogService {
       throw new NotFoundException('Location not found');
     }
     await this.prisma.serviceLocation.delete({ where: { id: locationId } });
+    this.emitServiceUpsert(serviceId);
     return { message: 'Location deleted' };
   }
 

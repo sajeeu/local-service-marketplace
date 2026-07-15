@@ -35,6 +35,7 @@ describe('ProviderVerificationService', () => {
     prisma as never,
     providerService as unknown as ProviderService,
     auditService as unknown as AuditService,
+    { emit: jest.fn() } as never,
     storage,
   );
 

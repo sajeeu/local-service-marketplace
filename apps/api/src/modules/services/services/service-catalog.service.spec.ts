@@ -79,12 +79,14 @@ describe('ServiceCatalogService', () => {
   const categoryService = {
     assertActiveCategory: jest.fn().mockResolvedValue({ id: 'cat-1' }),
   };
+  const eventEmitter = { emit: jest.fn() };
   const storage = { resolvePublicUrl: (value: string) => value };
 
   const service = new ServiceCatalogService(
     prisma as never,
     auditService as never,
     categoryService as never,
+    eventEmitter as never,
     storage,
   );
 

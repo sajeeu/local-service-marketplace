@@ -25,6 +25,7 @@ const PERMISSIONS: Array<{ code: string; description: string }> = [
   { code: 'service.manage', description: 'Manage service catalog listings' },
   { code: 'category.read', description: 'Read service categories' },
   { code: 'category.manage', description: 'Manage service categories' },
+  { code: 'search.manage', description: 'Manage search indexes and reindexing' },
 ];
 
 const CATEGORIES: Array<{
@@ -168,6 +169,7 @@ async function main(): Promise<void> {
       'category.manage',
       'service.read',
       'service.manage',
+      'search.manage',
     ],
   };
 

@@ -20,6 +20,8 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
   PASSWORD_RESET_EXPIRES_IN: z.string().default('1h'),
+  MEILISEARCH_HOST: z.string().url().default('http://localhost:7700'),
+  MEILISEARCH_API_KEY: z.string().default('masterKey_changeMe_devOnly_32chars'),
 });
 
 export type AppConfig = z.infer<typeof envSchema>;

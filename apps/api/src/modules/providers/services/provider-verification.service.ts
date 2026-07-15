@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { ProviderPrivateProfileDto } from '@local-service-marketplace/shared-types';
 import { ProviderVerificationStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
@@ -7,6 +8,7 @@ import type {
   RequestContextMeta,
 } from '../../identity/interfaces/auth.interfaces';
 import { AuditService } from '../../identity/services/audit.service';
+import { SEARCH_EVENTS } from '../../search/constants';
 import { ReviewProviderVerificationDto, SubmitProviderVerificationDto } from '../dto/provider.dto';
 import { STORAGE_PORT, type StoragePort } from '../interfaces/storage-port';
 import { toPrivateProfileDto, type ProviderWithRelations } from '../mappers/provider.mapper';
@@ -27,6 +29,7 @@ export class ProviderVerificationService {
     private readonly prisma: PrismaService,
     private readonly providerService: ProviderService,
     private readonly auditService: AuditService,
+    private readonly eventEmitter: EventEmitter2,
     @Inject(STORAGE_PORT) private readonly storage: StoragePort,
   ) {}
 
@@ -154,6 +157,7 @@ export class ProviderVerificationService {
       ...meta,
     });
 
+    this.eventEmitter.emit(SEARCH_EVENTS.PROVIDER_UPSERT, { providerId });
     return toPrivateProfileDto(updated as ProviderWithRelations);
   }
 

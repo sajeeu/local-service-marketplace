@@ -41,6 +41,7 @@ describe('ProviderService', () => {
   const service = new ProviderService(
     prisma as never,
     auditService as unknown as AuditService,
+    { emit: jest.fn() } as never,
     storage,
   );
 

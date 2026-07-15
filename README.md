@@ -2,7 +2,7 @@
 
 Multi-tenant local service marketplace connecting customers and service providers. This repository is a **modular monolith** monorepo.
 
-> **Phase 4** delivers the Service Catalog (categories, listings, pricing, media, locations, FAQs, requirements, draft/publish workflow). Bookings and payments come next.
+> **Phase 5** delivers Search & Discovery (Meilisearch indexing, full-text/geo/faceted search, autocomplete, popular searches, recently viewed, and customer discovery pages). Bookings and payments come next.
 
 ## Architecture
 
@@ -30,6 +30,7 @@ Multi-tenant local service marketplace connecting customers and service provider
 | Backend      | NestJS, TypeScript, Prisma                          |
 | Database     | PostgreSQL                                          |
 | Cache / jobs | Redis                                               |
+| Search       | Meilisearch                                         |
 | Packages     | pnpm workspaces                                     |
 | Infra        | Docker Compose, GitHub Actions                      |
 
@@ -37,7 +38,7 @@ Multi-tenant local service marketplace connecting customers and service provider
 
 - Node.js 22+
 - pnpm 9+
-- Docker Desktop (for PostgreSQL and Redis)
+- Docker Desktop (for PostgreSQL, Redis, and Meilisearch)
 
 ## Local setup
 
@@ -49,14 +50,14 @@ pnpm install
 
 ### 2. Start infrastructure
 
-PostgreSQL and Redis only (recommended for daily development):
+PostgreSQL, Redis, and Meilisearch (recommended for daily development):
 
 ```bash
 # PowerShell
 .\infrastructure\scripts\start-infra.ps1
 
 # or
-docker compose up -d postgres redis
+docker compose up -d postgres redis meilisearch
 ```
 
 Full stack in Docker (optional):
@@ -72,7 +73,7 @@ cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env.local
 ```
 
-Defaults point at local Docker Postgres (`localhost:5433`) / Redis and `http://localhost:3001`.
+Defaults point at local Docker Postgres (`localhost:5433`) / Redis / Meilisearch (`localhost:7700`) and `http://localhost:3001`.
 
 > Host port **5433** is used for PostgreSQL to avoid clashing with other local Postgres instances on `5432`. Inside Docker Compose the database still listens on `5432`.
 
@@ -83,7 +84,7 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Identity and tenancy models (User, Role, Permission, Tenant, Organization, Membership, tokens, AuditLog) live in Prisma. Seed creates system roles, base permissions, and a starter service category tree.
+Identity, tenancy, provider, catalog, and search models live in Prisma. Seed creates system roles, permissions (including `search.manage`), and a starter category tree.
 
 ### 5. Run applications
 
@@ -99,11 +100,12 @@ pnpm dev:web   # http://localhost:3000
 - API health: `http://localhost:3001/api/v1/health`
 - Swagger: `http://localhost:3001/api/docs`
 - Web: `http://localhost:3000`
+- Discovery: `/`, `/search`, `/search/map`, `/category/[slug]`, `/service/[id]`, `/provider/[id]`
 - Auth: `/login`, `/register`, `/account`
 - Organization: `/organization/create`
-- Provider services: `/provider/services`
-- Tenancy API: `/api/v1/tenants`, `/api/v1/tenants/current`, `/api/v1/tenants/switch`, `/api/v1/organizations`
-- Service Catalog API: `/api/v1/categories`, `/api/v1/services`
+- Provider workspace: `/provider/services`
+- Search API: `/api/v1/search`, `/api/v1/search/autocomplete`, `/api/v1/search/popular`
+- Admin reindex: `POST /api/v1/admin/search/reindex`
 
 ## Environment variables
 
@@ -122,8 +124,10 @@ pnpm dev:web   # http://localhost:3000
 | `JWT_REFRESH_EXPIRES_IN`    | Refresh token TTL (default `7d`)      |
 | `BCRYPT_SALT_ROUNDS`        | Password hash cost (default `12`)     |
 | `PASSWORD_RESET_EXPIRES_IN` | Reset token TTL (default `1h`)        |
+| `MEILISEARCH_HOST`          | Meilisearch URL (default localhost)   |
+| `MEILISEARCH_API_KEY`       | Meilisearch API / master key          |
 
-Placeholders for future providers (Stripe, AWS, Cloudinary, Meilisearch) are documented in `.env.example`.
+Placeholders for future providers (Stripe, AWS, Cloudinary) are documented in `.env.example`.
 
 ### Web (`apps/web/.env.local`)
 

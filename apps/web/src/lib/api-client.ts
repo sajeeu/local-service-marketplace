@@ -6,6 +6,7 @@ import type {
   AuthSessionResponse,
   AuthTokens,
   AuthUser,
+  AutocompleteResponse,
   CategoryDto,
   CategoryTreeNodeDto,
   CreateOrganizationRequest,
@@ -15,14 +16,19 @@ import type {
   ForgotPasswordResponse,
   HealthCheckResult,
   MessageResponse,
+  PopularSearchesResponse,
   ProviderAvailabilityDto,
   ProviderListResponse,
   ProviderPrivateProfileDto,
   ProviderPublicProfileDto,
+  ProviderSearchResponse,
+  PublicServiceDetailDto,
+  RecentlyViewedResponse,
   RegisterRequest,
   ReviewProviderVerificationRequest,
   ServiceDto,
   ServiceListResponse,
+  ServiceSearchResponse,
   SubmitProviderVerificationRequest,
   TenantListItem,
   UpdateProviderAvailabilityRequest,
@@ -342,6 +348,79 @@ export const apiClient = {
       method: 'PATCH',
       auth: true,
     });
+  },
+
+  searchServices(params: Record<string, unknown> | object): Promise<ServiceSearchResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        if (Array.isArray(value)) {
+          searchParams.append(key, value.join(','));
+        } else {
+          searchParams.append(key, String(value));
+        }
+      }
+    });
+    const query = searchParams.toString();
+    return request<ServiceSearchResponse>(`search${query ? `?${query}` : ''}`);
+  },
+
+  searchByCategory(
+    slug: string,
+    params: Record<string, unknown> | object,
+  ): Promise<ServiceSearchResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        if (Array.isArray(value)) {
+          searchParams.append(key, value.join(','));
+        } else {
+          searchParams.append(key, String(value));
+        }
+      }
+    });
+    const query = searchParams.toString();
+    return request<ServiceSearchResponse>(`search/categories/${slug}${query ? `?${query}` : ''}`);
+  },
+
+  searchProviders(params: Record<string, unknown>): Promise<ProviderSearchResponse> {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        searchParams.append(key, String(value));
+      }
+    });
+    const query = searchParams.toString();
+    return request<ProviderSearchResponse>(`search/providers${query ? `?${query}` : ''}`);
+  },
+
+  autocomplete(q: string, limit?: number): Promise<AutocompleteResponse> {
+    const params = new URLSearchParams({ q });
+    if (limit) {
+      params.append('limit', String(limit));
+    }
+    return request<AutocompleteResponse>(`search/autocomplete?${params.toString()}`);
+  },
+
+  popularSearches(limit?: number): Promise<PopularSearchesResponse> {
+    const params = limit ? `?limit=${limit}` : '';
+    return request<PopularSearchesResponse>(`search/popular${params}`);
+  },
+
+  recentlyViewed(limit?: number): Promise<RecentlyViewedResponse> {
+    const params = limit ? `?limit=${limit}` : '';
+    return request<RecentlyViewedResponse>(`search/recent${params}`, { auth: true });
+  },
+
+  trackServiceView(serviceId: string): Promise<MessageResponse> {
+    return request<MessageResponse>(`search/views/${serviceId}`, {
+      method: 'POST',
+      auth: true,
+    });
+  },
+
+  getPublicService(id: string): Promise<PublicServiceDetailDto> {
+    return request<PublicServiceDetailDto>(`search/services/${id}`);
   },
 };
 

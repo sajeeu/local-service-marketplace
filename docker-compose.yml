@@ -31,6 +31,24 @@ services:
       timeout: 5s
       retries: 10
 
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    container_name: lsm-meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: masterKey_changeMe_devOnly_32chars
+      MEILI_NO_ANALYTICS: 'true'
+    ports:
+      - '7700:7700'
+    volumes:
+      - meili_data:/meili_data
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--spider', 'http://127.0.0.1:7700/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: .
@@ -43,6 +61,8 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/local_service_marketplace?schema=public
       REDIS_URL: redis://redis:6379
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_API_KEY: masterKey_changeMe_devOnly_32chars
       CORS_ORIGINS: http://localhost:3000
     ports:
       - '3001:3001'
@@ -50,6 +70,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      meilisearch:
         condition: service_healthy
 
   web:
@@ -72,3 +94,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  meili_data:

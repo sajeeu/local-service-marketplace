@@ -96,6 +96,7 @@ model User {
   memberships         Membership[]
   providers           Provider[]
   verificationReviews ProviderVerification[] @relation("VerificationReviewer")
+  recentlyViewed      RecentlyViewedService[]
 
   @@index([status])
   @@index([createdAt])
@@ -421,6 +422,7 @@ model Service {
   locations    ServiceLocation[]
   faqs         ServiceFaq[]
   requirements ServiceRequirement[]
+  recentlyViewed RecentlyViewedService[]
 
   @@unique([providerId, slug])
   @@index([providerId])
@@ -508,4 +510,33 @@ model ServiceRequirement {
 
   @@index([serviceId])
   @@index([sortOrder])
+}
+
+model SearchQueryStat {
+  id               String   @id @default(uuid())
+  normalizedQuery  String   @unique
+  displayQuery     String
+  count            Int      @default(1)
+  lastSearchedAt   DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([count])
+  @@index([lastSearchedAt])
+}
+
+model RecentlyViewedService {
+  id        String   @id @default(uuid())
+  userId    String
+  serviceId String
+  viewedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceId])
+  @@index([userId, viewedAt])
+  @@index([serviceId])
 }

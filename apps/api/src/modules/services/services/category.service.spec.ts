@@ -12,7 +12,13 @@ describe('CategoryService', () => {
     },
   };
   const auditService = { log: jest.fn() };
-  const service = new CategoryService(prisma as never, auditService as never);
+  const service = new CategoryService(
+    prisma as never,
+    auditService as never,
+    {
+      emit: jest.fn(),
+    } as never,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();

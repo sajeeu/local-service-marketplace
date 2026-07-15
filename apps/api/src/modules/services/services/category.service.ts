@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type {
   CategoryDto,
   CategoryTreeNodeDto,
@@ -16,6 +17,7 @@ import type {
   RequestContextMeta,
 } from '../../identity/interfaces/auth.interfaces';
 import { AuditService } from '../../identity/services/audit.service';
+import { SEARCH_EVENTS } from '../../search/constants';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto/service.dto';
 import { toCategoryDto, toCategoryTree } from '../mappers/service.mapper';
 import { slugify } from '../utils/slugify';
@@ -25,6 +27,7 @@ export class CategoryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async listActive(): Promise<CategoryDto[]> {
@@ -126,6 +129,7 @@ export class CategoryService {
       ...meta,
     });
 
+    this.eventEmitter.emit(SEARCH_EVENTS.CATEGORY_UPDATED, { categoryId });
     return toCategoryDto(updated);
   }
 

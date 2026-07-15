@@ -41,6 +41,7 @@ export interface HealthCheckResult {
     app: HealthCheckComponent;
     database: HealthCheckComponent;
     redis: HealthCheckComponent;
+    meilisearch: HealthCheckComponent;
   };
 }
 
@@ -610,4 +611,134 @@ export interface UpdateServiceLocationRequest {
   latitude?: number | null;
   longitude?: number | null;
   serviceRadius?: number | null;
+}
+
+export type SearchSortOption =
+  'relevance' | 'newest' | 'price_asc' | 'price_desc' | 'rating_desc' | 'jobs_desc' | 'distance';
+
+export interface ServiceSearchHitDto {
+  id: string;
+  title: string;
+  shortDescription: string | null;
+  description: string | null;
+  categoryId: string;
+  categoryName: string;
+  categorySlug: string;
+  pricingModel: PricingModel;
+  basePrice: number | null;
+  currency: string;
+  providerId: string;
+  providerDisplayName: string;
+  providerVerificationStatus: ProviderVerificationStatus;
+  rating: number;
+  completedJobs: number;
+  cities: string[];
+  states: string[];
+  countries: string[];
+  latitude: number | null;
+  longitude: number | null;
+  serviceRadius: number | null;
+  tags: string[];
+  featured: boolean;
+  instantBookingEnabled: boolean;
+  coverImageUrl: string | null;
+  publishedAt: string | null;
+  distanceKm: number | null;
+}
+
+export interface ServiceSearchResponse {
+  items: ServiceSearchHitDto[];
+  meta: PaginationMeta;
+}
+
+export interface ProviderSearchHitDto {
+  id: string;
+  displayName: string;
+  bio: string | null;
+  verificationStatus: ProviderVerificationStatus;
+  averageRating: number;
+  completedJobs: number;
+  cities: string[];
+  states: string[];
+  countries: string[];
+  profilePhoto: string | null;
+}
+
+export interface ProviderSearchResponse {
+  items: ProviderSearchHitDto[];
+  meta: PaginationMeta;
+}
+
+export type AutocompleteSuggestionType = 'service' | 'provider' | 'category' | 'tag';
+
+export interface AutocompleteSuggestionDto {
+  type: AutocompleteSuggestionType;
+  id: string;
+  label: string;
+  subtitle?: string | null;
+  slug?: string | null;
+}
+
+export interface AutocompleteResponse {
+  suggestions: AutocompleteSuggestionDto[];
+}
+
+export interface PopularSearchDto {
+  query: string;
+  count: number;
+}
+
+export interface PopularSearchesResponse {
+  items: PopularSearchDto[];
+}
+
+export interface RecentlyViewedServiceDto {
+  id: string;
+  title: string;
+  shortDescription: string | null;
+  categoryName: string | null;
+  categorySlug: string | null;
+  basePrice: number | null;
+  currency: string;
+  providerDisplayName: string;
+  coverImageUrl: string | null;
+  viewedAt: string;
+}
+
+export interface RecentlyViewedResponse {
+  items: RecentlyViewedServiceDto[];
+}
+
+export interface PublicServiceDetailDto {
+  id: string;
+  title: string;
+  slug: string;
+  shortDescription: string | null;
+  description: string | null;
+  pricingModel: PricingModel;
+  basePrice: number | null;
+  currency: string;
+  duration: number | null;
+  instantBookingEnabled: boolean;
+  featured: boolean;
+  publishedAt: string | null;
+  category: CategoryDto;
+  provider: {
+    id: string;
+    displayName: string;
+    verificationStatus: ProviderVerificationStatus;
+    averageRating: number;
+    completedJobs: number;
+    profilePhoto: string | null;
+  };
+  media: ServiceMediaDto[];
+  tags: ServiceTagDto[];
+  locations: ServiceLocationDto[];
+  faqs: ServiceFaqDto[];
+  requirements: ServiceRequirementDto[];
+}
+
+export interface SearchReindexResult {
+  servicesIndexed: number;
+  providersIndexed: number;
 }
