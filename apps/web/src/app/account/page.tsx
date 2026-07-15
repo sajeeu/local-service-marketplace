@@ -3,8 +3,16 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Building2, Briefcase, Plus } from 'lucide-react';
 import type { AuthUser } from '@local-service-marketplace/shared-types';
+import { AppShell } from '@/components/app-shell';
+import { EmptyState } from '@/components/empty-state';
+import { PageHeader } from '@/components/page-header';
+import { PageSkeleton } from '@/components/spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { clearSession, getRefreshToken } from '@/features/auth/session';
 import { OrganizationCard } from '@/features/tenancy/components/organization-card';
@@ -71,91 +79,98 @@ function AccountContent() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(199_89%_90%)_0%,_transparent_55%),linear-gradient(180deg,_hsl(40_33%_98%)_0%,_hsl(200_20%_96%)_100%)]"
+    <AppShell
+      maxWidth="md"
+      topRight={
+        <Button variant="ghost" size="sm" onClick={() => void handleLogout()} disabled={loggingOut}>
+          {loggingOut ? 'Signing out…' : 'Sign out'}
+        </Button>
+      }
+    >
+      <PageHeader
+        title="Your account"
+        description="Manage your identity, workspaces, and provider tools."
+        className="mb-6"
       />
-      <div className="relative mx-auto max-w-2xl px-6 py-16">
-        <p className="mb-2 text-sm font-semibold tracking-[0.2em] text-primary uppercase">
-          Local Service Marketplace
-        </p>
-        <h1 className="font-[family-name:var(--font-display)] text-4xl font-semibold tracking-tight text-foreground">
-          Your account
-        </h1>
-        <p className="mt-3 text-muted-foreground">
-          Identity and workspace details for the signed-in user.
-        </p>
 
-        <div className="mt-10 space-y-6 border-t border-border pt-8">
-          {loading ? <p className="text-sm text-muted-foreground">Loading your identity…</p> : null}
-          {error ? (
-            <p
-              className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-              role="alert"
-            >
-              {error}
-            </p>
-          ) : null}
-          {user ? (
-            <dl className="space-y-4 text-sm">
-              <div>
-                <dt className="text-muted-foreground">Email</dt>
-                <dd className="mt-1 text-base font-medium text-foreground">{user.email}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Status</dt>
-                <dd className="mt-1 text-base font-medium text-foreground">{user.status}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Roles</dt>
-                <dd className="mt-1 text-base font-medium text-foreground">
-                  {user.roles.join(', ')}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Permissions</dt>
-                <dd className="mt-1 text-base font-medium text-foreground">
-                  {user.permissions.length > 0 ? user.permissions.join(', ') : 'None'}
-                </dd>
-              </div>
-            </dl>
-          ) : null}
+      {loading ? <PageSkeleton /> : null}
+      {error ? (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
 
-          <TenantSelector />
+      {user && !loading ? (
+        <div className="space-y-6 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Signed in as</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-lg font-medium text-foreground">{user.email}</p>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary">{user.status}</Badge>
+                {user.roles.map((role) => (
+                  <Badge key={role} variant="outline">
+                    {role}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-          {current?.organization ? (
-            <OrganizationCard
-              organization={current.organization}
-              tenantName={current.tenant.name}
-            />
-          ) : current ? (
-            <p className="text-sm text-muted-foreground">
-              Individual workspace — no organization attached.
-            </p>
-          ) : null}
-        </div>
+          <section className="space-y-3">
+            <h2 className="font-display text-lg font-semibold">Workspaces</h2>
+            <TenantSelector />
+            {current?.organization ? (
+              <OrganizationCard
+                organization={current.organization}
+                tenantName={current.tenant.name}
+              />
+            ) : current ? (
+              <p className="text-sm text-muted-foreground">
+                Individual workspace — no organization attached.
+              </p>
+            ) : null}
+            {tenants.length === 0 ? (
+              <EmptyState
+                icon={Building2}
+                title="No workspaces yet"
+                description="Create an organization to collaborate with a team, or continue as an individual."
+                primaryAction={
+                  <Button asChild>
+                    <Link href="/organization/create">
+                      <Plus className="size-4" aria-hidden />
+                      Create organization
+                    </Link>
+                  </Button>
+                }
+                className="py-10"
+              />
+            ) : null}
+          </section>
 
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Button onClick={() => void handleLogout()} disabled={loggingOut}>
-            {loggingOut ? 'Signing out…' : 'Sign out'}
-          </Button>
-          {canManageProvider ? (
-            <Button asChild variant="secondary">
-              <Link href="/provider/profile">Provider workspace</Link>
+          <section className="flex flex-wrap gap-3 border-t border-border pt-6">
+            {canManageProvider ? (
+              <Button asChild>
+                <Link href="/provider/profile">
+                  <Briefcase className="size-4" aria-hidden />
+                  Provider workspace
+                </Link>
+              </Button>
+            ) : null}
+            {!ownsBusiness ? (
+              <Button asChild variant="secondary">
+                <Link href="/organization/create">Create organization</Link>
+              </Button>
+            ) : null}
+            <Button asChild variant="outline">
+              <Link href="/">Back home</Link>
             </Button>
-          ) : null}
-          {!ownsBusiness ? (
-            <Button asChild variant="secondary">
-              <Link href="/organization/create">Create organization</Link>
-            </Button>
-          ) : null}
-          <Button asChild variant="secondary">
-            <Link href="/">Back home</Link>
-          </Button>
+          </section>
         </div>
-      </div>
-    </main>
+      ) : null}
+    </AppShell>
   );
 }
 

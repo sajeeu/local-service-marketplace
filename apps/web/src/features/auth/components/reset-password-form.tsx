@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { FormField, getFormFieldAria } from '@/components/form-field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { resetPasswordSchema, type ResetPasswordFormValues } from '../schemas';
 
@@ -40,6 +42,7 @@ export function ResetPasswordForm() {
         password: values.password,
       });
       setSuccessMessage(result.message);
+      toast.success('Password updated');
       setTimeout(() => {
         router.push('/login');
       }, 1200);
@@ -53,67 +56,46 @@ export function ResetPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
       {!tokenFromQuery ? (
-        <div className="space-y-2">
-          <Label htmlFor="token">Reset token</Label>
-          <Input id="token" aria-invalid={Boolean(errors.token)} {...register('token')} />
-          {errors.token ? (
-            <p className="text-sm text-destructive" role="alert">
-              {errors.token.message}
-            </p>
-          ) : null}
-        </div>
+        <FormField id="token" label="Reset token" error={errors.token?.message} required>
+          <Input {...getFormFieldAria('token', errors.token?.message)} {...register('token')} />
+        </FormField>
       ) : (
         <input type="hidden" {...register('token')} />
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="password">New password</Label>
+      <FormField id="password" label="New password" error={errors.password?.message} required>
         <Input
-          id="password"
           type="password"
           autoComplete="new-password"
-          aria-invalid={Boolean(errors.password)}
+          {...getFormFieldAria('password', errors.password?.message)}
           {...register('password')}
         />
-        {errors.password ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.password.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+      <FormField
+        id="confirmPassword"
+        label="Confirm password"
+        error={errors.confirmPassword?.message}
+        required
+      >
         <Input
-          id="confirmPassword"
           type="password"
           autoComplete="new-password"
-          aria-invalid={Boolean(errors.confirmPassword)}
+          {...getFormFieldAria('confirmPassword', errors.confirmPassword?.message)}
           {...register('confirmPassword')}
         />
-        {errors.confirmPassword ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.confirmPassword.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
       {formError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {formError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
       ) : null}
 
       {successMessage ? (
-        <p
-          className="rounded-md border border-accent/30 bg-accent/5 px-3 py-2 text-sm"
-          role="status"
-        >
-          {successMessage}
-        </p>
+        <Alert variant="success">
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

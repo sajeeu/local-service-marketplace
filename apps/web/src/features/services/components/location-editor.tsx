@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import type { ServiceFormValues } from '../schemas';
 
 interface LocationEditorProps {
@@ -63,16 +64,12 @@ export function LocationEditor({
                 Remove
               </Button>
             </div>
-            <select
-              id={`locations.${index}.type`}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              {...register(`locations.${index}.type`)}
-            >
+            <Select id={`locations.${index}.type`} {...register(`locations.${index}.type`)}>
               <option value="REMOTE">Remote</option>
               <option value="ON_SITE">On-site</option>
               <option value="CUSTOMER_LOCATION">Customer location</option>
               <option value="PROVIDER_LOCATION">Provider location</option>
-            </select>
+            </Select>
             <div className="grid gap-3 sm:grid-cols-3">
               <Input placeholder="City" {...register(`locations.${index}.city`)} />
               <Input placeholder="State" {...register(`locations.${index}.state`)} />

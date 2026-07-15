@@ -30,8 +30,12 @@ export function SearchResults({
         Found {response.meta.total} {response.meta.total === 1 ? 'service' : 'services'}
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {response.items.map((service) => (
-          <ServiceCard key={service.id} service={service} />
+        {response.items.map((service, index) => (
+          <ServiceCard
+            key={service.id}
+            service={service}
+            style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+          />
         ))}
       </div>
       <SearchPagination

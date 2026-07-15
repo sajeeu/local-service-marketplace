@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +45,7 @@ export function OrganizationForm() {
         logo: values.logo || undefined,
       });
       await persistSession(session);
+      toast.success('Organization created');
       router.push('/account');
       router.refresh();
     } catch (error) {
@@ -107,12 +110,9 @@ export function OrganizationForm() {
       </div>
 
       {formError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {formError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

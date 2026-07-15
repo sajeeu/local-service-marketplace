@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { ProviderPrivateProfileDto } from '@local-service-marketplace/shared-types';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { PageSkeleton } from '@/components/spinner';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { VerificationStatusBadge } from '@/features/provider/components/verification-status-badge';
 import { VerificationSubmitForm } from '@/features/provider/components/verification-submit-form';
@@ -31,17 +33,14 @@ export function ProviderProfilePage(): React.JSX.Element {
   }, []);
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading profile…</p>;
+    return <PageSkeleton />;
   }
 
   if (error) {
     return (
-      <p
-        className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        role="alert"
-      >
-        {error}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
@@ -57,7 +56,7 @@ export function ProviderProfilePage(): React.JSX.Element {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-foreground">
+            <h2 className="font-display text-2xl font-semibold text-foreground">
               {profile.displayName}
             </h2>
             <VerificationStatusBadge status={profile.verificationStatus} />

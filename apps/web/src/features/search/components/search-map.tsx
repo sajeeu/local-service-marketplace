@@ -14,7 +14,7 @@ export function SearchMap({ services, center = [51.505, -0.09] }: SearchMapProps
     if (typeof window === 'undefined') return;
 
     let cancelled = false;
-    let map: { remove: () => void } | null = null;
+    let map: import('leaflet').Map | null = null;
 
     void (async () => {
       const leaflet = await import('leaflet');

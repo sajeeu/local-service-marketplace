@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import type { ServiceFormValues } from '../schemas';
 
 interface MediaGalleryEditorProps {
@@ -53,14 +54,10 @@ export function MediaGalleryEditor({
           <div key={field.id} className="grid gap-3 border-b border-border pb-4 sm:grid-cols-12">
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor={`media.${index}.type`}>Type</Label>
-              <select
-                id={`media.${index}.type`}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                {...register(`media.${index}.type`)}
-              >
+              <Select id={`media.${index}.type`} {...register(`media.${index}.type`)}>
                 <option value="IMAGE">Image</option>
                 <option value="VIDEO">Video</option>
-              </select>
+              </Select>
             </div>
             <div className="space-y-2 sm:col-span-5">
               <Label htmlFor={`media.${index}.url`}>URL</Label>

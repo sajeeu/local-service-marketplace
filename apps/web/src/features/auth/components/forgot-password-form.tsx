@@ -4,9 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { FormField, getFormFieldAria } from '@/components/form-field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from '../schemas';
 
@@ -43,46 +44,48 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+      <FormField
+        id="email"
+        label="Email"
+        error={errors.email?.message}
+        description="We will send a reset link if an account exists."
+        required
+      >
         <Input
-          id="email"
           type="email"
           autoComplete="email"
-          aria-invalid={Boolean(errors.email)}
+          {...getFormFieldAria(
+            'email',
+            errors.email?.message,
+            'We will send a reset link if an account exists.',
+          )}
           {...register('email')}
         />
-        {errors.email ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.email.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
       {formError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {formError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
       ) : null}
 
       {successMessage ? (
-        <div className="space-y-3 rounded-md border border-accent/30 bg-accent/5 px-3 py-3 text-sm text-foreground">
-          <p role="status">{successMessage}</p>
-          {devResetToken ? (
-            <p className="break-all text-muted-foreground">
-              Dev reset token:{' '}
-              <Link
-                href={`/reset-password?token=${encodeURIComponent(devResetToken)}`}
-                className="font-medium text-primary hover:underline"
-              >
-                Continue to reset
-              </Link>
-            </p>
-          ) : null}
-        </div>
+        <Alert variant="success">
+          <AlertDescription>
+            <p>{successMessage}</p>
+            {devResetToken ? (
+              <p className="mt-2 break-all text-muted-foreground">
+                Dev reset token:{' '}
+                <Link
+                  href={`/reset-password?token=${encodeURIComponent(devResetToken)}`}
+                  className="font-medium text-primary hover:underline"
+                >
+                  Continue to reset
+                </Link>
+              </p>
+            ) : null}
+          </AlertDescription>
+        </Alert>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

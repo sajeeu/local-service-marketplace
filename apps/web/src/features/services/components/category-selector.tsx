@@ -2,6 +2,7 @@
 
 import type { CategoryTreeNodeDto } from '@local-service-marketplace/shared-types';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 
 interface CategorySelectorProps {
   categories: CategoryTreeNodeDto[];
@@ -36,9 +37,8 @@ export function CategorySelector({
   return (
     <div className="space-y-2">
       <Label htmlFor="categoryId">Category</Label>
-      <select
+      <Select
         id="categoryId"
-        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
@@ -50,7 +50,7 @@ export function CategorySelector({
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
       {error ? (
         <p className="text-sm text-destructive" role="alert">
           {error}

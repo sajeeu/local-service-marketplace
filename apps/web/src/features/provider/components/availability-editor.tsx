@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { ProviderAvailabilityDto } from '@local-service-marketplace/shared-types';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,6 +64,7 @@ export function AvailabilityEditor(): React.JSX.Element {
         timezone: values.timezone,
       });
       await loadSlots();
+      toast.success('Availability saved');
     } catch (error) {
       setFormError(
         error instanceof ApiClientError ? error.message : 'Unable to add availability slot.',
@@ -91,12 +94,9 @@ export function AvailabilityEditor(): React.JSX.Element {
   return (
     <div className="space-y-8">
       {listError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {listError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{listError}</AlertDescription>
+        </Alert>
       ) : null}
 
       <section className="space-y-3">
@@ -190,12 +190,9 @@ export function AvailabilityEditor(): React.JSX.Element {
         </div>
 
         {formError ? (
-          <p
-            className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-            role="alert"
-          >
-            {formError}
-          </p>
+          <Alert variant="destructive">
+            <AlertDescription>{formError}</AlertDescription>
+          </Alert>
         ) : null}
 
         <Button type="submit" disabled={isSubmitting}>

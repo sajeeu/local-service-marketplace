@@ -2,10 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import type {
   CategoryTreeNodeDto,
   CreateServiceRequest,
 } from '@local-service-marketplace/shared-types';
+import { PageHeader } from '@/components/page-header';
+import { PageSkeleton } from '@/components/spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { ServiceForm } from '@/features/services/components/service-form';
 
@@ -42,35 +46,32 @@ export function NewServicePage(): React.JSX.Element {
   }, []);
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading form…</p>;
+    return <PageSkeleton />;
   }
 
   if (error) {
     return (
-      <p
-        className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        role="alert"
-      >
-        {error}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-foreground">
-          New service
-        </h2>
-        <p className="mt-1 text-muted-foreground">
-          Save as a draft now. Publish once your provider profile is verified.
-        </p>
-      </div>
+      <PageHeader
+        title="New service"
+        description="Save as a draft now. Publish once your provider profile is verified."
+        backHref="/provider/services"
+        backLabel="Back to services"
+        className="mb-0"
+      />
       <ServiceForm
         categories={categories}
         submitLabel="Create draft"
         onSubmit={async (payload) => {
           const created = await apiClient.createService(payload as CreateServiceRequest);
+          toast.success('Service created');
           router.push(`/provider/services/${created.id}`);
           router.refresh();
         }}

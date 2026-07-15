@@ -7,8 +7,8 @@ export const metadata: Metadata = {
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="animate-in fade-in duration-500">
-      <h1 className="font-[family-name:var(--font-display)] text-3xl font-semibold tracking-tight text-foreground">
+    <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500">
+      <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
         Forgot password
       </h1>
       <p className="mt-2 mb-8 text-muted-foreground">

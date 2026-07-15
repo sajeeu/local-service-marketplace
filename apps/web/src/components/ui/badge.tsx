@@ -11,7 +11,7 @@ const badgeVariants = cva(
         secondary: 'border-transparent bg-secondary text-secondary-foreground',
         outline: 'border-border text-foreground',
         success: 'border-transparent bg-accent text-accent-foreground',
-        warning: 'border-transparent bg-[hsl(38_92%_50%)] text-[hsl(0_0%_100%)]',
+        warning: 'border-transparent bg-warning text-warning-foreground',
         destructive: 'border-transparent bg-destructive text-destructive-foreground',
         muted: 'border-transparent bg-muted text-muted-foreground',
       },
@@ -28,3 +28,5 @@ export interface BadgeProps
 export function Badge({ className, variant, ...props }: BadgeProps): React.JSX.Element {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
+
+export { badgeVariants };

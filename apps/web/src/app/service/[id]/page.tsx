@@ -180,9 +180,12 @@ export default async function ServicePage({ params }: ServicePageProps) {
                     </Badge>
                   )}
 
-                  <Button className="w-full" size="lg">
-                    Book now
+                  <Button className="w-full" size="lg" disabled title="Booking coming soon">
+                    Booking coming soon
                   </Button>
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    Online booking will be available soon.
+                  </p>
                 </div>
 
                 <div className="rounded-lg border bg-card p-6">

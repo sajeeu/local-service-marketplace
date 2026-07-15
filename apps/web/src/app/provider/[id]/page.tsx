@@ -135,7 +135,7 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
               </div>
             </div>
 
-            {provider.languages.length > 0 && (
+            {provider.languages.length > 0 ? (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-4 font-display text-xl font-semibold">Languages</h2>
                 <div className="flex flex-wrap gap-2">
@@ -146,9 +146,16 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
                   ))}
                 </div>
               </div>
+            ) : (
+              <div className="mb-8 rounded-lg border border-dashed bg-card/50 p-6">
+                <h2 className="mb-1 font-display text-xl font-semibold">Languages</h2>
+                <p className="text-sm text-muted-foreground">
+                  This provider has not listed languages yet.
+                </p>
+              </div>
             )}
 
-            {provider.qualifications.length > 0 && (
+            {provider.qualifications.length > 0 ? (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-4 font-display text-xl font-semibold">Qualifications</h2>
                 <div className="space-y-3">
@@ -163,9 +170,16 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
                   ))}
                 </div>
               </div>
+            ) : (
+              <div className="mb-8 rounded-lg border border-dashed bg-card/50 p-6">
+                <h2 className="mb-1 font-display text-xl font-semibold">Qualifications</h2>
+                <p className="text-sm text-muted-foreground">
+                  No qualifications have been added yet.
+                </p>
+              </div>
             )}
 
-            {provider.certifications.length > 0 && (
+            {provider.certifications.length > 0 ? (
               <div className="mb-8 rounded-lg border bg-card p-6">
                 <h2 className="mb-4 font-display text-xl font-semibold">Certifications</h2>
                 <div className="space-y-3">
@@ -181,11 +195,20 @@ export default async function ProviderPage({ params }: ProviderPageProps) {
                   ))}
                 </div>
               </div>
+            ) : (
+              <div className="mb-8 rounded-lg border border-dashed bg-card/50 p-6">
+                <h2 className="mb-1 font-display text-xl font-semibold">Certifications</h2>
+                <p className="text-sm text-muted-foreground">
+                  No certifications have been added yet.
+                </p>
+              </div>
             )}
 
             <div className="flex justify-center gap-4">
               <Button asChild>
-                <Link href={`/search?provider=${id}`}>View services</Link>
+                <Link href={`/search?q=${encodeURIComponent(provider.displayName)}`}>
+                  Browse related services
+                </Link>
               </Button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Fraunces, Source_Sans_3 } from 'next/font/google';
 import type { ReactNode } from 'react';
+import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
 const display = Fraunces({
@@ -23,7 +24,16 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${display.variable} ${sans.variable}`}>{children}</body>
+      <body className={`${display.variable} ${sans.variable}`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-md focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
+        <div id="main-content">{children}</div>
+        <Toaster position="top-right" richColors closeButton />
+      </body>
     </html>
   );
 }

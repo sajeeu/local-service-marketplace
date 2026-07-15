@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { FormField, getFormFieldAria } from '@/components/form-field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { loginSchema, type LoginFormValues } from '../schemas';
 import { persistSession } from '../session';
@@ -41,52 +42,46 @@ export function LoginForm() {
     }
   });
 
+  const emailError = errors.email?.message;
+  const passwordError = errors.password?.message;
+
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+      <FormField id="email" label="Email" error={emailError} required>
         <Input
-          id="email"
           type="email"
           autoComplete="email"
-          aria-invalid={Boolean(errors.email)}
+          {...getFormFieldAria('email', emailError)}
           {...register('email')}
         />
-        {errors.email ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.email.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <Label htmlFor="password">Password</Label>
+          <label htmlFor="password" className="text-sm leading-none font-medium text-foreground">
+            Password
+          </label>
           <Link href="/forgot-password" className="text-sm text-primary hover:underline">
             Forgot password?
           </Link>
         </div>
         <Input
-          id="password"
           type="password"
           autoComplete="current-password"
-          aria-invalid={Boolean(errors.password)}
+          {...getFormFieldAria('password', passwordError)}
           {...register('password')}
         />
-        {errors.password ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.password.message}
+        {passwordError ? (
+          <p id="password-error" className="text-sm text-destructive" role="alert">
+            {passwordError}
           </p>
         ) : null}
       </div>
 
       {formError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {formError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

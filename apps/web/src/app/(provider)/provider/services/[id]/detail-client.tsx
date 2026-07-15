@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import type { ServiceDto } from '@local-service-marketplace/shared-types';
+import { PageHeader } from '@/components/page-header';
+import { PageSkeleton } from '@/components/spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { ConfirmDialog } from '@/features/services/components/confirm-dialog';
@@ -38,13 +42,19 @@ export function ServiceDetailPage(): React.JSX.Element {
     void load();
   }, [load]);
 
-  async function runAction(action: () => Promise<ServiceDto | void>): Promise<void> {
+  async function runAction(
+    action: () => Promise<ServiceDto | void>,
+    successMessage?: string,
+  ): Promise<void> {
     setBusy(true);
     setActionError(null);
     try {
       const result = await action();
       if (result) {
         setService(result);
+      }
+      if (successMessage) {
+        toast.success(successMessage);
       }
     } catch (err) {
       setActionError(err instanceof ApiClientError ? err.message : 'Action failed.');
@@ -56,84 +66,76 @@ export function ServiceDetailPage(): React.JSX.Element {
   }
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading service…</p>;
+    return <PageSkeleton />;
   }
 
   if (error || !service) {
     return (
-      <p
-        className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        role="alert"
-      >
-        {error ?? 'Service not found.'}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error ?? 'Service not found.'}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-foreground">
-              {service.title}
-            </h2>
+      <PageHeader
+        title={service.title}
+        description={service.shortDescription || 'No short description.'}
+        backHref="/provider/services"
+        backLabel="Back to services"
+        className="mb-0"
+        actions={
+          <div className="flex flex-wrap gap-2">
             <ServiceStatusBadge status={service.status} />
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/provider/services/${service.id}/edit`}>Edit</Link>
+            </Button>
           </div>
-          <p className="text-muted-foreground">
-            {service.shortDescription || 'No short description.'}
-          </p>
-          <p className="text-sm text-muted-foreground">Slug: {service.slug}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link href={`/provider/services/${service.id}/edit`}>Edit</Link>
+        }
+      />
+      <p className="text-sm text-muted-foreground">Slug: {service.slug}</p>
+      <div className="flex flex-wrap gap-2">
+        {service.status === 'DRAFT' || service.status === 'PAUSED' ? (
+          <Button type="button" onClick={() => setPublishOpen(true)} disabled={busy}>
+            Publish
           </Button>
-          {service.status === 'DRAFT' || service.status === 'PAUSED' ? (
-            <Button type="button" onClick={() => setPublishOpen(true)} disabled={busy}>
-              Publish
-            </Button>
-          ) : null}
-          {service.status === 'PUBLISHED' ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => void runAction(() => apiClient.pauseService(service.id))}
-            >
-              Pause
-            </Button>
-          ) : null}
-          {service.status !== 'ARCHIVED' ? (
-            <Button
-              type="button"
-              variant="outline"
-              disabled={busy}
-              onClick={() => void runAction(() => apiClient.archiveService(service.id))}
-            >
-              Archive
-            </Button>
-          ) : null}
-          {service.status !== 'PUBLISHED' ? (
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={busy}
-              onClick={() => setDeleteOpen(true)}
-            >
-              Delete
-            </Button>
-          ) : null}
-        </div>
+        ) : null}
+        {service.status === 'PUBLISHED' ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() =>
+              void runAction(() => apiClient.pauseService(service.id), 'Service paused')
+            }
+          >
+            Pause
+          </Button>
+        ) : null}
+        {service.status !== 'ARCHIVED' ? (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() =>
+              void runAction(() => apiClient.archiveService(service.id), 'Service archived')
+            }
+          >
+            Archive
+          </Button>
+        ) : null}
+        {service.status !== 'PUBLISHED' ? (
+          <Button type="button" variant="ghost" disabled={busy} onClick={() => setDeleteOpen(true)}>
+            Delete
+          </Button>
+        ) : null}
       </div>
 
       {actionError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {actionError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{actionError}</AlertDescription>
+        </Alert>
       ) : null}
 
       <dl className="grid gap-4 sm:grid-cols-3">
@@ -219,7 +221,9 @@ export function ServiceDetailPage(): React.JSX.Element {
         confirmLabel="Publish"
         confirming={busy}
         onCancel={() => setPublishOpen(false)}
-        onConfirm={() => void runAction(() => apiClient.publishService(service.id))}
+        onConfirm={() =>
+          void runAction(() => apiClient.publishService(service.id), 'Service published')
+        }
       />
 
       <ConfirmDialog
@@ -234,7 +238,7 @@ export function ServiceDetailPage(): React.JSX.Element {
             await apiClient.deleteService(service.id);
             router.push('/provider/services');
             router.refresh();
-          })
+          }, 'Service deleted')
         }
       />
     </div>

@@ -3,6 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { ProviderPrivateProfileDto } from '@local-service-marketplace/shared-types';
+import { PageHeader } from '@/components/page-header';
+import { PageSkeleton } from '@/components/spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { ProviderProfileForm } from '@/features/provider/components/provider-profile-form';
 
@@ -39,31 +42,24 @@ export function ProviderOnboardingPage(): React.JSX.Element {
   }, []);
 
   if (loading) {
-    return <p className="text-muted-foreground">Preparing your provider profile…</p>;
+    return <PageSkeleton />;
   }
 
   if (error) {
     return (
-      <p
-        className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        role="alert"
-      >
-        {error}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-foreground">
-          Complete your provider profile
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          Tell customers who you are. You can update qualifications, languages, and availability
-          anytime.
-        </p>
-      </div>
+      <PageHeader
+        title="Complete your provider profile"
+        description="Tell customers who you are. You can update qualifications, languages, and availability anytime."
+        className="mb-0"
+      />
       <ProviderProfileForm
         initial={profile}
         submitLabel="Finish onboarding"

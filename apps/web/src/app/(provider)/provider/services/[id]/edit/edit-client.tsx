@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import type {
   CategoryTreeNodeDto,
   ServiceDto,
   UpdateServiceRequest,
 } from '@local-service-marketplace/shared-types';
+import { PageHeader } from '@/components/page-header';
+import { PageSkeleton } from '@/components/spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { ServiceForm } from '@/features/services/components/service-form';
 
@@ -49,28 +53,26 @@ export function EditServicePage(): React.JSX.Element {
   }, [params.id]);
 
   if (loading) {
-    return <p className="text-muted-foreground">Loading editor…</p>;
+    return <PageSkeleton />;
   }
 
   if (error || !service) {
     return (
-      <p
-        className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-        role="alert"
-      >
-        {error ?? 'Service not found.'}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error ?? 'Service not found.'}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-foreground">
-          Edit service
-        </h2>
-        <p className="mt-1 text-muted-foreground">{service.title}</p>
-      </div>
+      <PageHeader
+        title="Edit service"
+        description={service.title}
+        backHref={`/provider/services/${service.id}`}
+        backLabel="Back to service"
+        className="mb-0"
+      />
       <ServiceForm
         categories={categories}
         initial={service}
@@ -81,6 +83,7 @@ export function EditServicePage(): React.JSX.Element {
             payload as UpdateServiceRequest,
           );
           setService(updated);
+          toast.success('Service updated');
           router.push(`/provider/services/${updated.id}`);
           router.refresh();
         }}

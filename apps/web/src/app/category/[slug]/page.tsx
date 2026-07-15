@@ -54,5 +54,5 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  return <SearchPageClient initialCategories={categories} />;
+  return <SearchPageClient initialCategories={categories} initialCategory={category.slug} />;
 }

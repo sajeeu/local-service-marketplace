@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { FormField, getFormFieldAria } from '@/components/form-field';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { ApiClientError, apiClient } from '@/lib/api-client';
 import { registerSchema, type RegisterFormValues } from '../schemas';
@@ -56,95 +57,73 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <div className="space-y-2">
-        <Label htmlFor="accountType">Account type</Label>
+      <FormField id="accountType" label="Account type" error={errors.accountType?.message} required>
         <Select
-          id="accountType"
-          aria-invalid={Boolean(errors.accountType)}
+          {...getFormFieldAria('accountType', errors.accountType?.message)}
           {...register('accountType')}
         >
           <option value="CUSTOMER">Customer</option>
           <option value="PROVIDER">Provider</option>
           <option value="BUSINESS">Business</option>
         </Select>
-        {errors.accountType ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.accountType.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
       {accountType === 'BUSINESS' ? (
-        <div className="space-y-2">
-          <Label htmlFor="organizationName">Organization name</Label>
+        <FormField
+          id="organizationName"
+          label="Organization name"
+          error={errors.organizationName?.message}
+          required
+        >
           <Input
-            id="organizationName"
-            aria-invalid={Boolean(errors.organizationName)}
+            {...getFormFieldAria('organizationName', errors.organizationName?.message)}
             {...register('organizationName')}
           />
-          {errors.organizationName ? (
-            <p className="text-sm text-destructive" role="alert">
-              {errors.organizationName.message}
-            </p>
-          ) : null}
-        </div>
+        </FormField>
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+      <FormField id="email" label="Email" error={errors.email?.message} required>
         <Input
-          id="email"
           type="email"
           autoComplete="email"
-          aria-invalid={Boolean(errors.email)}
+          {...getFormFieldAria('email', errors.email?.message)}
           {...register('email')}
         />
-        {errors.email ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.email.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      <FormField
+        id="password"
+        label="Password"
+        error={errors.password?.message}
+        description="Use at least 8 characters."
+        required
+      >
         <Input
-          id="password"
           type="password"
           autoComplete="new-password"
-          aria-invalid={Boolean(errors.password)}
+          {...getFormFieldAria('password', errors.password?.message, 'Use at least 8 characters.')}
           {...register('password')}
         />
-        {errors.password ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.password.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+      <FormField
+        id="confirmPassword"
+        label="Confirm password"
+        error={errors.confirmPassword?.message}
+        required
+      >
         <Input
-          id="confirmPassword"
           type="password"
           autoComplete="new-password"
-          aria-invalid={Boolean(errors.confirmPassword)}
+          {...getFormFieldAria('confirmPassword', errors.confirmPassword?.message)}
           {...register('confirmPassword')}
         />
-        {errors.confirmPassword ? (
-          <p className="text-sm text-destructive" role="alert">
-            {errors.confirmPassword.message}
-          </p>
-        ) : null}
-      </div>
+      </FormField>
 
       {formError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {formError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{formError}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

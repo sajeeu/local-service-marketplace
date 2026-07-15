@@ -4,6 +4,7 @@ import type { Control, FieldErrors } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import type { ServiceFormValues } from '../schemas';
 
 interface PricingEditorProps {
@@ -27,17 +28,12 @@ export function PricingEditor({
           control={control}
           name="pricingModel"
           render={({ field }) => (
-            <select
-              id="pricingModel"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              value={field.value}
-              onChange={field.onChange}
-            >
+            <Select id="pricingModel" value={field.value} onChange={field.onChange}>
               <option value="FIXED">Fixed</option>
               <option value="HOURLY">Hourly</option>
               <option value="DAILY">Daily</option>
               <option value="QUOTE_REQUIRED">Quote required</option>
-            </select>
+            </Select>
           )}
         />
       </div>

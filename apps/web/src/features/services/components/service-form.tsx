@@ -9,6 +9,7 @@ import type {
   ServiceDto,
   UpdateServiceRequest,
 } from '@local-service-marketplace/shared-types';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -281,12 +282,9 @@ export function ServiceForm({
       <RequirementsEditor control={control} register={register} errors={errors} />
 
       {serverError ? (
-        <p
-          className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
-          role="alert"
-        >
-          {serverError}
-        </p>
+        <Alert variant="destructive">
+          <AlertDescription>{serverError}</AlertDescription>
+        </Alert>
       ) : null}
 
       <Button type="submit" disabled={isSubmitting}>
